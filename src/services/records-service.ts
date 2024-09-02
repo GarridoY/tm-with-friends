@@ -1,5 +1,6 @@
 "use server"
 
+import serverServiceAxiosInstance from "@/lib/serverServiceAxiosInstance";
 import { TrackmaniaRecord } from "../types/trackmania-records";
 
 export async function fetchMapRecords(accounts: string[], mapId: string): Promise<TrackmaniaRecord[] | null> {
@@ -11,14 +12,13 @@ export async function fetchMapRecords(accounts: string[], mapId: string): Promis
         }
     }
 
-    const data = await fetch(`https://prod.trackmania.core.nadeo.online/v2/mapRecords/?accountIdList=${accountIdList}&mapId=${mapId}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `nadeo_v1 t=${process.env.NADEO_SERVICES_ACCESS_TOKEN}`
-        }
+    const response = await serverServiceAxiosInstance.get(`/v2/mapRecords/?accountIdList=${accountIdList}&mapId=${mapId}`).catch(err => {
+        console.error(err);
+        return null;
     });
-
-    const json = await data.json() as TrackmaniaRecord[] & ErrorResponse;
+    if (!response || response.status !== 200) { return null; }
+    
+    const json = response.data as TrackmaniaRecord[] & ErrorResponse;
     if (!Array.isArray(json)) {
         return null;
     }

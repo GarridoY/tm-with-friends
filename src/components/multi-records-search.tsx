@@ -33,7 +33,7 @@ export default function MultiRecordsSearch() {
         }
 
         const data = await fetchMapRecords(
-            Object.values(ids), 
+            Array.from(ids.values()), 
             mapId
         );
         if (!data) {
@@ -58,9 +58,12 @@ export default function MultiRecordsSearch() {
 
     async function supplyDisplayName(data: TrackmaniaRecord[]) {
         return await Promise.all(data.map(async (v) => {
-            const response = await fetchDisplayNameFromAccountId([v.accountId]) as object;
-            const name = Object.values(response)[0] as string;
-            return {...v, displayName: name};
+            const response = await fetchDisplayNameFromAccountId([v.accountId]);
+            if (response && response.has(v.accountId)) {
+                return {...v, displayName: response.get(v.accountId) as string};
+            } else {
+                return {...v, displayName: "Unknown"};
+            }
         }));
     }
 

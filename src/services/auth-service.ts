@@ -26,10 +26,11 @@ export async function fetchOAuthAccessToken(): Promise<OAuthResponse> {
     const CLIENT_ID = process.env.CLIENT_ID as string;
     const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
 
-    const requestBody = new FormData();
-    requestBody.append("grant_type", "client_credentials")
-    requestBody.append("client_id", CLIENT_ID)
-    requestBody.append("client_secret", CLIENT_SECRET)
+    const requestBody = new URLSearchParams({
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'grant_type': 'client_credentials'
+    });
 
     const data = await fetch("https://api.trackmania.com/api/access_token", {
         method: "POST",

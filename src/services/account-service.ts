@@ -1,5 +1,7 @@
 "use server"
 
+import oauthServiceAxiosInstance from "@/lib/oauthServiceAxiosInstance";
+
 export async function fetchAccountIdFromDisplayName(displayNames: string[]): Promise<Map<string, string> | null> {
     let accountIds = "";
     for (let i = 0; i < displayNames.length; i++) {
@@ -9,16 +11,15 @@ export async function fetchAccountIdFromDisplayName(displayNames: string[]): Pro
         }
     }
 
-    const data = await fetch(`https://api.trackmania.com/api/display-names/account-ids?${accountIds}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${process.env.OAUTH_ACCESS_TOKEN}`
-        }
+    const response = await oauthServiceAxiosInstance(`/api/display-names/account-ids?${accountIds}`).catch(err => {
+        console.error(err);
+        return null;
     });
-    if (!data.ok) { return null; }
-    const json = await data.json();
-    const map = new Map(json) as Map<string, string>;
-    if (map.size == 0) {return null; }
+    if (!response || response.status !== 200) { return null; }
+
+    const json = response.data;
+    const map = new Map(Object.entries(json)) as Map<string, string>;
+    if (map.size == 0) { return null; }
 
     return map;
 }
@@ -32,16 +33,15 @@ export async function fetchDisplayNameFromAccountId(accountIds: string[]): Promi
         }
     }
 
-    const data = await fetch(`https://api.trackmania.com/api/display-names?${displayNames}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${process.env.OAUTH_ACCESS_TOKEN}`
-        }
+    const response = await oauthServiceAxiosInstance.get(`/api/display-names?${displayNames}`).catch(err => {
+        console.error(err);
+        return null;
     });
-    if (!data.ok) { return null; }
-    const json = await data.json();
-    const map = new Map(json) as Map<string, string>;
-    if (map.size == 0) {return null; }
+    if (!response || response.status !== 200) { return null; }
+
+    const json = response.data;
+    const map = new Map(Object.entries(json)) as Map<string, string>;
+    if (map.size == 0) { return null; }
     
     return map;
 }

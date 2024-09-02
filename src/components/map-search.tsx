@@ -34,7 +34,12 @@ export default function MapLookup() {
             return;
         }
 
-        const name = Object.values(await fetchDisplayNameFromAccountId([data.author]) as object)[0] as string;
+        let name = 'Unknown';
+        const nameResposne = await fetchDisplayNameFromAccountId([data.author])
+        if (nameResposne && nameResposne.has(data.author)) {
+            name = nameResposne.get(data.author) as string;
+        }
+        
         const extra =  {...data, authorName: name}
 
         setLoading(false);

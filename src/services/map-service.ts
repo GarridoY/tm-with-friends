@@ -1,19 +1,17 @@
 "use server"
 
+import serverServiceAxiosInstance from "@/lib/serverServiceAxiosInstance";
 import { TrackmaniaMap } from "../types/trackmania-map";
 
 export async function fetchMap(mapId: string): Promise<TrackmaniaMap | null> {
-    const data = await fetch(`https://prod.trackmania.core.nadeo.online/maps/${mapId}`, {
-        method: "GET",
-        headers: {
-            "Authorization": `nadeo_v1 t=${process.env.NADEO_SERVICES_ACCESS_TOKEN}`
-        }
+    const response = await serverServiceAxiosInstance.get(`/maps/${mapId}`).catch(err => {
+        console.error(err);
+        return null;
     });
-
-    if (!data.ok) { return null; }
-
-    const json = await data.json() as TrackmaniaMap & ErrorResponse;
+    if (!response || response.status !== 200) { return null; }
+    
+    const json = response.data as TrackmaniaMap & ErrorResponse;
     if (!json.mapId) { return null; }
 
-    return data.json();
+    return json;
 }
