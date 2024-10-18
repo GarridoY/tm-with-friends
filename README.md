@@ -1,6 +1,11 @@
-# tm-with-friends
+# Trackmania with Friends
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+## Ideas for further development
+- Adding CI / CD with GitHub Actions & Terraform
+- Redesign UX flow by starting off with creating a group
+- Add state to URL to allow sharing query results
 
 ## Getting Started
 
