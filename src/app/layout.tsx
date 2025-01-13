@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -20,53 +20,51 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        
-          <NavigationMenu className="flex min-w-full justify-center p-4 border-b-slate-400 border-b mb-12">
-            <NavigationMenuList className="flex justify-start min-w-[1460px]">
-              <NavigationMenuItem className="mr-12">
-                <Link href="/" legacyBehavior passHref>
-                  <NavigationMenuLink href="/" className={navigationMenuTriggerStyle()}>
+
+          <nav className="flex min-w-full justify-center p-4 border-b-slate-400 border-b">
+            <ul className="flex justify-start min-w-full lg:min-w-[1460px] lg:flex-row flex-col items-center">
+              <li className="text-center min-w-full lg:min-w-fit lg:mr-12 lg:border-none border-b border-b-slate-400">
+                <Link href="/" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
                     <Image className="relative mr-4" src="/racing-car.png"
-                        alt="Race car" width={30} height={10} priority
-                    /> 
+                            alt="Race car" width={30} height={10} priority/> 
                     Home
-                  </NavigationMenuLink>
                 </Link>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <Link href="/played-before" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              </li>
+              <li className="text-center min-w-full lg:min-w-fit lg:border-none border-b border-b-slate-400">
+                <Link href="/played-before" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
                     Have we played this?
-                  </NavigationMenuLink>
                 </Link>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <Link href="/player" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              </li>
+              <li className="text-center min-w-full lg:min-w-fit lg:border-none border-b border-b-slate-400">
+                <Link href="/player" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
                     Player lookup
-                  </NavigationMenuLink>
                 </Link>
-              </NavigationMenuItem>
-
-              <NavigationMenuItem>
-                <Link href="/map" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              </li>
+              <li className="text-center min-w-full lg:min-w-fit lg:border-none border-b border-b-slate-400">
+                <Link href="/map" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
                     Map lookup
-                  </NavigationMenuLink>
                 </Link>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-
+              </li>
+            </ul>
+          </nav>
 
           <main className="flex justify-center">
-            <div className="flex flex-col min-w-[1460px]">
+            <div className="flex flex-col min-w-fit lg:min-w-[1460px]">
               {children}
             </div>
           </main>
         
+          <footer className="flex justify-center p-4 border-t bg-t-slate-400">
+            <div className="flex flex-row items min-w-full lg:min-w-[1460px] items-center justify-center">
+              <Link target="_blank" href="https://dk.linkedin.com/in/dani%C3%A9l-garrido" className="px-12">
+                <Image src="/LinkedIn.png" alt="LinkedIn" width={100} height={24} priority/> 
+              </Link>
+
+              <Link target="_blank" href="https://github.com/GarridoY" className="px-12">
+                <Image src="/GitHub.png" alt="GitHub" width={100} height={40} priority/> 
+              </Link>
+            </div>
+          </footer>
       </body>
     </html>
   );
