@@ -23,9 +23,10 @@ export default function RootLayout({
 
           <nav className="flex min-w-full justify-center p-4 border-b-slate-400 border-b">
             <ul className="flex justify-start min-w-full lg:min-w-[1460px] lg:flex-row flex-col items-center">
+
               <li className="text-center min-w-full lg:min-w-fit lg:mr-12 lg:border-none border-b border-b-slate-400">
                 <Link href="/" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
-                    <Image className="relative mr-4" src="/racing-car.png"
+                    <Image className="relative mr-4 w-auto h-auto" src="/racing-car.png"
                             alt="Race car" width={30} height={10} priority/> 
                     Home
                 </Link>
@@ -48,7 +49,7 @@ export default function RootLayout({
             </ul>
           </nav>
 
-          <main className="flex justify-center">
+          <main className="flex justify-center p-4">
             <div className="flex flex-col min-w-fit lg:min-w-[1460px]">
               {children}
             </div>

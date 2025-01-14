@@ -18,24 +18,19 @@ interface Data {
 }
 export default function MultiRecordsSearch() {
     const [mapId, setMapId] = useState('');
-    const [id1, setId1] = useState('');
-    const [id2, setId2] = useState('');
-    const [id3, setId3] = useState('');
+    const [players, setPlayers] = useState([{ id: 1, name: '' }]);
     const [data, setData] = useState<Data>({ data: [], success: false});
     const [loading, setLoading] = useState<boolean>(false);
 
     const fetchData = async () => {
-        const accounts = [id1, id2, id3];
+        const accounts = players.map(player => player.name);
         const ids = await fetchAccountIdFromDisplayName(accounts);
         if (!ids) {
             setLoading(false);
             return;
         }
 
-        const data = await fetchMapRecords(
-            Array.from(ids.values()), 
-            mapId
-        );
+        const data = await fetchMapRecords(Array.from(ids.values()), mapId);
         if (!data) {
             setLoading(false);
             return;
@@ -56,7 +51,13 @@ export default function MultiRecordsSearch() {
         fetchData();
     }
 
-    async function supplyDisplayName(data: TrackmaniaRecord[]) {
+    const handleNameChange = (id: number, newName: string) => {
+        setPlayers(players.map(player =>
+            player.id === id ? { ...player, name: newName } : player
+        ));
+    }
+
+    const supplyDisplayName = async (data: TrackmaniaRecord[]): Promise<TrackmaniaRecordExtended[]> => {
         return await Promise.all(data.map(async (v) => {
             const response = await fetchDisplayNameFromAccountId([v.accountId]);
             if (response && response.has(v.accountId)) {
@@ -67,6 +68,18 @@ export default function MultiRecordsSearch() {
         }));
     }
 
+    const addPlayer = () => {
+        setPlayers([...players, { id: players.length + 1, name: '' }])
+    }
+
+    const tryFeature = () => {
+        setMapId('1642ef95-643a-44b8-ba94-8377aea6e5ba'); // https://trackmania.exchange/mapshow/178497
+        setPlayers([ 
+            { id: 1, name: 'duedreng3n' },
+            { id: 2, name: 'Wirtual' }
+        ])
+    } 
+
     return (
         <>
             <Header 
@@ -74,45 +87,61 @@ export default function MultiRecordsSearch() {
                 label="Check to see if you and your friends has played a specific map" 
             />
 
+            <Button type="button" className="w-full mb-4" onClick={tryFeature}>Fill form with example data</Button>
+
             <div className="grid w-full max-w-sm items-center gap-1.5">
                 <Label htmlFor="mapId">Map ID</Label>
                 <Input type="text" name="mapId" placeholder="Map ID" value={mapId} onChange={(e) => setMapId(e.target.value)} />
 
-                <Label htmlFor="id1">Player 1</Label>
-                <Input type="text" name="id1" placeholder="Display name" value={id1} onChange={(e) => setId1(e.target.value)} />
+                { players.map(player => {
+                    return (
+                        <div key={player.id}>
+                            <Label htmlFor={'id'+player.id}>Player {player.id}</Label>
+                            <Input type="text" name={'id'+player.id} placeholder="Display name" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} />
+                        </div>
+                    )
+                })}
 
-                <Label htmlFor="id2">Player 2</Label>
-                <Input type="text" name="id2" placeholder="Display name" value={id2} onChange={(e) => setId2(e.target.value)} />
+                <Button type="button" className="w-fit" onClick={addPlayer}>+ Add player</Button>
 
-                <Label htmlFor="id3">Player 3</Label>
-                <Input type="text" name="id3" placeholder="Display name" value={id3} onChange={(e) => setId3(e.target.value)} />
-
-                <Button type="submit" onClick={handleClick}>Submit</Button>
+                <div className="pt-4">
+                    <Button type="submit" className="w-full" onClick={handleClick}>{ loading ? 'Loading... ' : 'Submit'}</Button>
+                </div>
             </div>
 
             <Separator className="my-4" />
 
-            <Table className="table-auto">
+            <Table className="table-auto overflow-hidden lg:text-sm text-xs">
                 <TableHeader>
                     <TableRow>
-                        <TableHead>#</TableHead>
+                        <TableHead className="px-1">#</TableHead>
                         <TableHead>Player</TableHead>
                         <TableHead>Time</TableHead>
                         <TableHead>Achieved on</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                { data.data.length > 0 ? data.data.sort(compareRecords).map((record, index) => {
+                { data.success ? data.data.sort(compareRecords).map((record, index) => {
                     return (
                         <TableRow key={record.mapRecordId}>
-                            <TableCell>{index + 1}</TableCell>
+                            <TableCell className="px-1">{index + 1}</TableCell>
                             <TableCell>{record.displayName}</TableCell>
                             <TableCell>{millisToTimestamp(record.recordScore.time)}</TableCell>
                             <TableCell>{timestampToDate(record.timestamp)}</TableCell>
                         </TableRow>
                     )
-                }) : (loading && <><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>)}
-                    
+                }) : (<><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>)}
+
+                { data.success && players.filter(player => !data.data.map(record => record.displayName).includes(player.name)).map((player, index) => {
+                    return (
+                        <TableRow key={index}>
+                            <TableCell className="px-1">N/A</TableCell>
+                            <TableCell>{player.name}</TableCell>
+                            <TableCell>N/A</TableCell>
+                            <TableCell>N/A</TableCell>
+                        </TableRow>
+                    )  
+                })}
                 </TableBody>
             </Table>
         </>
@@ -122,7 +151,7 @@ export default function MultiRecordsSearch() {
 function TableSkeletonCard() {
     return (
         <TableRow>
-            <TableCell>
+            <TableCell className="px-1">
                 <Skeleton className="h-4" />
             </TableCell>
             <TableCell>
@@ -148,12 +177,12 @@ function compareRecords(recordA: TrackmaniaRecordExtended, recordB: TrackmaniaRe
 }
 
 function millisToTimestamp(millis: number): string {
-    var ms = millis % 1000;
+    const ms = millis % 1000;
     millis = (millis - ms) / 1000;
-    var secs = millis % 60;
+    const secs = millis % 60;
     millis = (millis - secs) / 60;
-    var mins = millis % 60;
-    var hrs = (millis - mins) / 60;
+    const mins = millis % 60;
+    const hrs = (millis - mins) / 60;
 
     return hrs.toString().padStart(2, '0') + ':' + 
         mins.toString().padStart(2, '0') + ':' + 
@@ -162,5 +191,5 @@ function millisToTimestamp(millis: number): string {
 }
 
 function timestampToDate(timestamp: string): string {
-    return new Date(timestamp).toLocaleString();
+    return new Date(timestamp).toLocaleDateString();
 }
