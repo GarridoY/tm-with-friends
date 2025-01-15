@@ -134,8 +134,8 @@ export default function MultiRecordsSearch() {
 
                     { players.map(player => {
                         return (
-                            <div className="flex flex-row items-center">
-                                <div key={player.id}>
+                            <div className="flex flex-row items-center" key={player.id}>
+                                <div>
                                     <Label htmlFor={'id'+player.id} className="pb-2">Player {player.id}</Label>
                                     <Input type="text" name={'id'+player.id} placeholder="Display name" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} />
                                 </div>
