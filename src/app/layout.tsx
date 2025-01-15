@@ -37,11 +37,6 @@ export default function RootLayout({
                 </Link>
               </li>
               <li className="text-center min-w-full lg:min-w-fit lg:border-none border-b border-b-slate-400">
-                <Link href="/player" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
-                    Player lookup
-                </Link>
-              </li>
-              <li className="text-center min-w-full lg:min-w-fit lg:border-none border-b border-b-slate-400">
                 <Link href="/map" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
                     Map lookup
                 </Link>
