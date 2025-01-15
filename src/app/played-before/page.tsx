@@ -1,5 +1,6 @@
 import MultiRecordsSearch from "@/components/multi-records-search";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
     title: "Records - Trackmania with Friends"
@@ -8,7 +9,9 @@ export const metadata: Metadata = {
 export default function Search() {
     return (
         <>
-            <MultiRecordsSearch />
+            <Suspense>
+                <MultiRecordsSearch />
+            </Suspense>
         </>
     )
 }

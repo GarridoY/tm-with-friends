@@ -1,5 +1,6 @@
 import MapLookup from "@/components/map-search";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
     title: "Map - Trackmania with Friends"
@@ -8,7 +9,9 @@ export const metadata: Metadata = {
 export default function MapLookupPage() {
     return (
         <>
-            <MapLookup />
+            <Suspense>
+                <MapLookup />
+            </Suspense>
         </>
     )
 }
