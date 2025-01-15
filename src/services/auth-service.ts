@@ -22,7 +22,6 @@ interface OAuthResponse {
 }
 
 export async function fetchOAuthAccessToken(): Promise<OAuthResponse> {
-    // TODO Error handle in case variables aren't set
     const CLIENT_ID = process.env.CLIENT_ID as string;
     const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
 

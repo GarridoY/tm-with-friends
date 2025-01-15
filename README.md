@@ -5,7 +5,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 ## Ideas for further development
 - Adding CI / CD with GitHub Actions & Terraform
 - Redesign UX flow by starting off with creating a group
-- Add state to URL to allow sharing query results
+- ✅ Add state to URL to allow sharing query results
 
 ## Getting Started
 

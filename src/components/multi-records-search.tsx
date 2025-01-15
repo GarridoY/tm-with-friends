@@ -7,18 +7,35 @@ import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId } from "@/
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 import Header from "./header";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "./ui/table";
 import { Skeleton } from "./ui/skeleton";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 interface Data {
     data: TrackmaniaRecordExtended[],
     success: boolean
 }
 export default function MultiRecordsSearch() {
-    const [mapId, setMapId] = useState('');
-    const [players, setPlayers] = useState([{ id: 1, name: '' }]);
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const params = new URLSearchParams(searchParams);
+
+    const playersInputFromNames = (names: string[]) => {
+        let players: { id: number, name: string}[] = [];
+        let counter = 1;
+        for (const name of names) {    
+            players = [...players, {id: counter, name: name}];
+            counter += 1;
+        }
+        return players;
+    }
+
+    const [mapId, setMapId] = useState(params.has('mapId') ? params.get('mapId') as string : '');
+    const [players, setPlayers] = useState(params.getAll('players[]').length > 0 ? 
+        playersInputFromNames(params.getAll('players[]')) : 
+        [{ id: 1, name: '' }]);
     const [data, setData] = useState<Data>({ data: [], success: false});
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -49,6 +66,20 @@ export default function MultiRecordsSearch() {
         setData({ data: [], success: false});
 
         fetchData();
+        
+        updateSearchParams();
+    }
+
+    // Input in search params to allow sharing
+    const updateSearchParams = () => {
+        const params = new URLSearchParams(searchParams);
+        for (const player of players) {
+            if (!params.getAll('players[]').includes(player.name)) {
+                params.append('players[]', player.name);
+            }
+        }
+        params.set('mapId', mapId);
+        router.push(`${pathname}?${params.toString()}`)
     }
 
     const handleNameChange = (id: number, newName: string) => {
@@ -87,63 +118,66 @@ export default function MultiRecordsSearch() {
                 label="Check to see if you and your friends has played a specific map" 
             />
 
-            <Button type="button" className="w-full mb-4" onClick={tryFeature}>Fill form with example data</Button>
+            <Button type="button" className="w-fit mb-12" onClick={tryFeature}>Fill form with example data</Button>
 
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-                <Label htmlFor="mapId">Map ID</Label>
-                <Input type="text" name="mapId" placeholder="Map ID" value={mapId} onChange={(e) => setMapId(e.target.value)} />
+            <div className="flex flex-col lg:flex-row lg:space-x-4">
 
-                { players.map(player => {
-                    return (
-                        <div key={player.id}>
-                            <Label htmlFor={'id'+player.id}>Player {player.id}</Label>
-                            <Input type="text" name={'id'+player.id} placeholder="Display name" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} />
-                        </div>
-                    )
-                })}
+                <div className="flex lg:w-1/3 flex-col">
+                    
 
-                <Button type="button" className="w-fit" onClick={addPlayer}>+ Add player</Button>
+                    <Label htmlFor="mapId" className="pb-2">Map ID</Label>
+                    <Input type="text" name="mapId" placeholder="Map ID" value={mapId} onChange={(e) => setMapId(e.target.value)} />
 
-                <div className="pt-4">
-                    <Button type="submit" className="w-full" onClick={handleClick}>{ loading ? 'Loading... ' : 'Submit'}</Button>
+                    { players.map(player => {
+                        return (
+                            <div key={player.id}>
+                                <Label htmlFor={'id'+player.id} className="pb-2">Player {player.id}</Label>
+                                <Input type="text" name={'id'+player.id} placeholder="Display name" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} />
+                            </div>
+                        )
+                    })}
+
+                    <Button type="button" className="w-fit mt-2" onClick={addPlayer}>+ Add player</Button>
+
+                    <div className="pt-4">
+                        <Button type="submit" className="w-full" onClick={handleClick}>{ loading ? 'Loading... ' : 'Submit'}</Button>
+                    </div>
                 </div>
+
+                <Table className="table-auto mt-8 lg:mt-0 lg:text-sm text-xs">
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="px-1">#</TableHead>
+                            <TableHead>Player</TableHead>
+                            <TableHead>Time</TableHead>
+                            <TableHead>Achieved on</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    { data.success ? data.data.sort(compareRecords).map((record, index) => {
+                        return (
+                            <TableRow key={record.mapRecordId}>
+                                <TableCell className="px-1">{index + 1}</TableCell>
+                                <TableCell>{record.displayName}</TableCell>
+                                <TableCell>{millisToTimestamp(record.recordScore.time)}</TableCell>
+                                <TableCell>{timestampToDate(record.timestamp)}</TableCell>
+                            </TableRow>
+                        )
+                    }) : (<><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>)}
+
+                    { data.success && players.filter(player => !data.data.map(record => record.displayName).includes(player.name)).map((player, index) => {
+                        return (
+                            <TableRow key={index}>
+                                <TableCell className="px-1">N/A</TableCell>
+                                <TableCell>{player.name}</TableCell>
+                                <TableCell>N/A</TableCell>
+                                <TableCell>N/A</TableCell>
+                            </TableRow>
+                        )  
+                    })}
+                    </TableBody>
+                </Table>
             </div>
-
-            <Separator className="my-4" />
-
-            <Table className="table-auto overflow-hidden lg:text-sm text-xs">
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="px-1">#</TableHead>
-                        <TableHead>Player</TableHead>
-                        <TableHead>Time</TableHead>
-                        <TableHead>Achieved on</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                { data.success ? data.data.sort(compareRecords).map((record, index) => {
-                    return (
-                        <TableRow key={record.mapRecordId}>
-                            <TableCell className="px-1">{index + 1}</TableCell>
-                            <TableCell>{record.displayName}</TableCell>
-                            <TableCell>{millisToTimestamp(record.recordScore.time)}</TableCell>
-                            <TableCell>{timestampToDate(record.timestamp)}</TableCell>
-                        </TableRow>
-                    )
-                }) : (<><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>)}
-
-                { data.success && players.filter(player => !data.data.map(record => record.displayName).includes(player.name)).map((player, index) => {
-                    return (
-                        <TableRow key={index}>
-                            <TableCell className="px-1">N/A</TableCell>
-                            <TableCell>{player.name}</TableCell>
-                            <TableCell>N/A</TableCell>
-                            <TableCell>N/A</TableCell>
-                        </TableRow>
-                    )  
-                })}
-                </TableBody>
-            </Table>
         </>
     )
 }

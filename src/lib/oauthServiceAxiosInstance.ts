@@ -21,9 +21,7 @@ const oauthServiceAxiosInstance = axios.create({
 oauthServiceAxiosInstance.interceptors.request.use(
 	async function (config) {
 		if (!accessToken) {
-			console.log("oauth empty token, fetching new token")
 			const authResponse = await fetchOAuthAccessToken();
-            // TODO What should happen here?
             if (!authResponse) {
                 return config;
             }
@@ -39,7 +37,6 @@ oauthServiceAxiosInstance.interceptors.request.use(
 		// Fetch new access token if expired
 		const expired = Date.now() > new Date(jwt.exp * 1000).getTime();
 		if (expired) {
-			console.log("oauth expired token, fetching new token")
 			// Access token is Base64 encoded on retrieval
 			const authResponse = await fetchOAuthAccessToken();
             if (!authResponse) {
