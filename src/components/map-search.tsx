@@ -73,7 +73,7 @@ export default function MapLookup() {
     
     return (
         <>
-            <div className="flex flex-row space-x-12">
+            <div className="flex flex-col lg:flex-row lg:space-x-4">
 
                 <div className="flex lg:w-1/3 flex-col">
                     <Header 
@@ -93,13 +93,15 @@ export default function MapLookup() {
                     </div>
                 </div>
 
-                {mapData ? 
-                <div>
-                    <p>{translateTextStyling(mapData.name)}</p>
-                    <p>By {mapData.authorName}</p>
-                    <Image src={mapData.thumbnailUrl} width={500} height={250} alt="Thumbnail" />
+                <div className="mt-8 lg:w-[500px]">
+                    {mapData ? 
+                    <>
+                        <p>{translateTextStyling(mapData.name)}</p>
+                        <p>By {mapData.authorName}</p>
+                        <Image src={mapData.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
+                    </>
+                    : (loading && <SkeletonCard />)}
                 </div>
-                : (loading && <SkeletonCard />)}
             </div>
         </>
     )
