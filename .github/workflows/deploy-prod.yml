@@ -21,3 +21,11 @@ jobs:
       with:
         service: 'web1-tm-with-friends'
         image: 'docker.io/garridoy/tm-with-friends:latest'
+        region: 'europe-west1'
+        env_vars: |-
+          CLIENT_ID=${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
+          ENCODED_CREDENTIALS=${{ secrets.ENCODED_CREDENTIALS }}
+
+    - name: 'Use output'
+      run: 'curl "${{ steps.deploy.outputs.url }}"'
