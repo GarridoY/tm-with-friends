@@ -73,6 +73,7 @@ export default function MultiRecordsSearch() {
     // Input in search params to allow sharing
     const updateSearchParams = () => {
         const params = new URLSearchParams(searchParams);
+        params.delete('players[]');
         for (const player of players) {
             if (!params.getAll('players[]').includes(player.name)) {
                 params.append('players[]', player.name);
