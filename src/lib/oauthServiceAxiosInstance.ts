@@ -14,7 +14,10 @@ interface JWT {
 let accessToken = null as string | null;
 
 const oauthServiceAxiosInstance = axios.create({
-	baseURL: "https://api.trackmania.com"
+	baseURL: "https://api.trackmania.com",
+	headers: {
+    	"User-Agent": "Trackmania with Friends / duedreng3n / https://github.com/GarridoY/tm-with-friends"
+  	}
 });
 
 // Add a request interceptor
