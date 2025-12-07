@@ -33,7 +33,7 @@ export async function fetchDisplayNameFromAccountId(accountIds: string[]): Promi
         }
     }
 
-    const response = await oauthServiceAxiosInstance.get(`/api/display-names?${displayNames}`).catch(err => {
+    const response = await oauthServiceAxiosInstance(`/api/display-names?${displayNames}`).catch(err => {
         console.error(err);
         return null;
     });
