@@ -22,6 +22,9 @@ export default function MultiRecordsSearch() {
     const searchParams = useSearchParams();
     const params = new URLSearchParams(searchParams);
 
+    const group = localStorage.getItem("group");
+    const groupObj: { name: string, members: string[] } | null = group ? JSON.parse(group) : null;
+
     const playersInputFromNames = (names: string[]) => {
         let players: { id: number, name: string}[] = [];
         let counter = 1;
@@ -33,9 +36,7 @@ export default function MultiRecordsSearch() {
     }
 
     const [mapId, setMapId] = useState(params.has('mapId') ? params.get('mapId') as string : '');
-    const [players, setPlayers] = useState(params.getAll('players[]').length > 0 ? 
-        playersInputFromNames(params.getAll('players[]')) : 
-        [{ id: 1, name: '' }]);
+    const [players, setPlayers] = useState(groupObj ? playersInputFromNames(groupObj.members) : [{ id: 1, name: '' }]);
     const [data, setData] = useState<Data>({ data: [], success: false});
     const [loading, setLoading] = useState<boolean>(false);
 

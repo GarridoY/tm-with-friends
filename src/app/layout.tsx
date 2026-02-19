@@ -31,6 +31,11 @@ export default function RootLayout({
                     Home
                 </Link>
               </li>
+              <li className="text-center min-w-full lg:min-w-fit lg:border-r-2 lg:border-r-slate-800 lg:border-b-0 border-b border-b-slate-400">
+                <Link href="/group/management" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
+                    Group management
+                </Link>
+              </li>
               <li className="text-center min-w-full lg:min-w-fit lg:border-none border-b border-b-slate-400">
                 <Link href="/played-before" className={`lg:min-w-fit min-w-full ${navigationMenuTriggerStyle()}`}>
                     Have we played this?
