@@ -1,15 +1,6 @@
 import { fetchOAuthAccessToken } from '@/services/auth-service';
 import axios from 'axios';
-
-interface JWT {
-	aud: string,
-	jti: string,
-	iat: number,
-	nbf: number,
-	exp: number,
-	sub: string,
-	scopes: string[]
-}
+import { getPayloadFromAccessToken, decodeJWT } from './jwtUtil';
 
 let accessToken = null as string | null;
 
@@ -58,13 +49,5 @@ oauthServiceAxiosInstance.interceptors.request.use(
 		return Promise.reject(error);
 	}
 );
-
-function getPayloadFromAccessToken(accessToken: string): string {
-    return accessToken.split(".")[1];
-}
-
-function decodeJWT(payload: string): JWT {
-    return JSON.parse(atob(payload));
-}
 
 export default oauthServiceAxiosInstance;

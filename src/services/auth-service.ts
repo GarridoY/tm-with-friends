@@ -1,3 +1,5 @@
+"use server";
+
 interface NadeoServiceResponse {
     accessToken: string,
     refreshToken: string

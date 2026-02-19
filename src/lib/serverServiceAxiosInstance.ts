@@ -1,22 +1,6 @@
 import { fetchNadeoServices } from '@/services/auth-service';
 import axios from 'axios';
-
-interface JWT {
-    jti: string,
-    iss: string,
-    iat: number,
-    rat: number,
-    exp: number,
-    aud: string,
-    usg: string,
-    sid: string,
-    sat: number,
-    sub: string
-    aun: string
-    rtk: boolean,
-    pce: boolean,
-    ubiservices_uid: string
-}
+import { getPayloadFromAccessToken, decodeJWT } from './jwtUtil';
 
 let accessToken = null as string | null;
 
@@ -68,13 +52,5 @@ serverServiceAxiosInstance.interceptors.request.use(
 		return Promise.reject(error);
 	}
 );
-
-function getPayloadFromAccessToken(accessToken: string): string {
-    return accessToken.split(".")[1];
-}
-
-function decodeJWT(payload: string): JWT {
-    return JSON.parse(atob(payload));
-}
 
 export default serverServiceAxiosInstance;
