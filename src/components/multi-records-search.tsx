@@ -1,6 +1,6 @@
 "use client"
 
-import { SyntheticEvent, useState } from "react"
+import { SyntheticEvent, useEffect, useState } from "react"
 import { TrackmaniaRecord, TrackmaniaRecordExtended } from "@/types/trackmania-records";
 import { fetchMapRecords } from "@/services/records-service";
 import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId } from "@/services/account-service";
@@ -21,9 +21,16 @@ export default function MultiRecordsSearch() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const params = new URLSearchParams(searchParams);
+    const [players, setPlayers] = useState([{ id: 1, name: '' }]);
 
-    const group = localStorage.getItem("group");
-    const groupObj: { name: string, members: string[] } | null = group ? JSON.parse(group) : null;
+    useEffect(() => {
+        const group = typeof window !== "undefined" ? localStorage.getItem("group") : null;
+        const groupObj: { name: string, members: string[] } | null = group ? JSON.parse(group) : null;
+        if (groupObj) {
+            setPlayers(playersInputFromNames(groupObj.members));
+        }
+    }, []);
+    
 
     const playersInputFromNames = (names: string[]) => {
         let players: { id: number, name: string}[] = [];
@@ -36,7 +43,6 @@ export default function MultiRecordsSearch() {
     }
 
     const [mapId, setMapId] = useState(params.has('mapId') ? params.get('mapId') as string : '');
-    const [players, setPlayers] = useState(groupObj ? playersInputFromNames(groupObj.members) : [{ id: 1, name: '' }]);
     const [data, setData] = useState<Data>({ data: [], success: false});
     const [loading, setLoading] = useState<boolean>(false);
 
