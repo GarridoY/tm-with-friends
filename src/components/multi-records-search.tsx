@@ -12,65 +12,49 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from ".
 import { Skeleton } from "./ui/skeleton";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
-interface Data {
-    data: TrackmaniaRecordExtended[],
-    success: boolean
-}
+
 export default function MultiRecordsSearch() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const params = new URLSearchParams(searchParams);
-    const [players, setPlayers] = useState([{ id: 1, name: '' }]);
+    const [players, setPlayers] = useState<string[]>([""]);
 
     useEffect(() => {
         const group = typeof window !== "undefined" ? localStorage.getItem("group") : null;
         const groupObj: { name: string, members: string[] } | null = group ? JSON.parse(group) : null;
         if (groupObj) {
-            setPlayers(playersInputFromNames(groupObj.members));
+            setPlayers(groupObj.members);
         }
     }, []);
-    
-
-    const playersInputFromNames = (names: string[]) => {
-        let players: { id: number, name: string}[] = [];
-        let counter = 1;
-        for (const name of names) {    
-            players = [...players, {id: counter, name: name}];
-            counter += 1;
-        }
-        return players;
-    }
 
     const [mapId, setMapId] = useState(params.has('mapId') ? params.get('mapId') as string : '');
-    const [data, setData] = useState<Data>({ data: [], success: false});
+    const [mapRecordsData, setMapRecordsData] = useState<TrackmaniaRecordExtended[] | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
     const fetchData = async () => {
-        const accounts = players.map(player => player.name);
-        const ids = await fetchAccountIdFromDisplayName(accounts);
-        if (!ids) {
+        const accountIds = await fetchAccountIdFromDisplayName(players);
+        if (!accountIds) {
             setLoading(false);
             return;
         }
 
-        const data = await fetchMapRecords(Array.from(ids.values()), mapId);
-        if (!data) {
+        const mapRecords = await fetchMapRecords(Array.from(accountIds.values()), mapId);
+        if (!mapRecords) {
             setLoading(false);
             return;
         }
 
-        const extra = await supplyDisplayName(data);
-        const response = {data: extra, success: true}
+        const extendedMapRecords = await supplyDisplayName(mapRecords);
         setLoading(false);
-        return setData(response);
+        return setMapRecordsData(extendedMapRecords);
     }
 
-    const handleClick = (event: SyntheticEvent) => {
+    const submit = (event: SyntheticEvent) => {
         event.preventDefault();
         
         setLoading(true);
-        setData({ data: [], success: false});
+        setMapRecordsData([]);
 
         fetchData();
         
@@ -80,20 +64,12 @@ export default function MultiRecordsSearch() {
     // Input in search params to allow sharing
     const updateSearchParams = () => {
         const params = new URLSearchParams(searchParams);
-        params.delete('players[]');
-        for (const player of players) {
-            if (!params.getAll('players[]').includes(player.name)) {
-                params.append('players[]', player.name);
-            }
-        }
         params.set('mapId', mapId);
         router.push(`${pathname}?${params.toString()}`)
     }
 
     const handleNameChange = (id: number, newName: string) => {
-        setPlayers(players.map(player =>
-            player.id === id ? { ...player, name: newName } : player
-        ));
+        setPlayers(players.map((player, index) => index === id ? newName : player));
     }
 
     const supplyDisplayName = async (data: TrackmaniaRecord[]): Promise<TrackmaniaRecordExtended[]> => {
@@ -110,8 +86,8 @@ export default function MultiRecordsSearch() {
     const tryFeature = () => {
         setMapId('1642ef95-643a-44b8-ba94-8377aea6e5ba'); // https://trackmania.exchange/mapshow/178497
         setPlayers([ 
-            { id: 1, name: 'duedreng3n' },
-            { id: 2, name: 'Wirtual' }
+            'duedreng3n',
+            'Wirtual'
         ])
     } 
 
@@ -132,11 +108,11 @@ export default function MultiRecordsSearch() {
                     <Label htmlFor="mapId" className="pb-2">Map ID</Label>
                     <Input type="text" name="mapId" placeholder="Map ID" value={mapId} onChange={(e) => setMapId(e.target.value)} />
 
-                    { players.map(player => {
+                    { players.map((player, index) => {
                         return (
-                            <div className="flex flex-col items-start mt-4" key={player.id}>
-                                <Label htmlFor={'id'+player.id} className="pb-2">Player {player.id}</Label>
-                                <Input type="text" name={'id'+player.id} placeholder="Display name" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} />
+                            <div className="flex flex-col items-start mt-4" key={index}>
+                                <Label htmlFor={'id'+index} className="pb-2">Player {index + 1}</Label>
+                                <Input type="text" name={'id'+index} placeholder="Display name" value={player} onChange={(e) => handleNameChange(index, e.target.value)} />
                             </div>
                         )
                     })}
@@ -144,7 +120,7 @@ export default function MultiRecordsSearch() {
                     <Button type="button" className="w-fit mt-2" onClick={() => router.push('/group/management')}>Edit group</Button>
 
                     <div className="pt-4">
-                        <Button type="submit" className="w-full" onClick={handleClick} disabled={players.length == 0}>{ loading ? 'Loading... ' : 'Submit'}</Button>
+                        <Button type="submit" className="w-full" onClick={submit} disabled={loading}>{ loading ? 'Loading... ' : 'Submit'}</Button>
                     </div>
                 </div>
 
@@ -158,7 +134,12 @@ export default function MultiRecordsSearch() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                    { data.success ? data.data.sort(compareRecords).map((record, index) => {
+
+                    {/* Loading or initial state */}
+                    { (loading || !mapRecordsData) && <><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>}
+
+                    {/* Players in group with records */}
+                    { !loading && mapRecordsData && mapRecordsData.length > 0 && mapRecordsData.sort(compareRecords).map((record, index) => {
                         return (
                             <TableRow key={record.mapRecordId}>
                                 <TableCell className="px-1">{index + 1}</TableCell>
@@ -167,13 +148,14 @@ export default function MultiRecordsSearch() {
                                 <TableCell>{timestampToDate(record.timestamp)}</TableCell>
                             </TableRow>
                         )
-                    }) : (<><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>)}
+                    })}
 
-                    { data.success && players.filter(player => !data.data.map(record => record.displayName).includes(player.name)).map((player, index) => {
+                    {/* Players in group without records */}
+                    { !loading && mapRecordsData && mapRecordsData.length >= 0 && players.filter(player => !mapRecordsData.map(record => record.displayName).includes(player)).map((player, index) => {
                         return (
                             <TableRow key={index}>
                                 <TableCell className="px-1">N/A</TableCell>
-                                <TableCell>{player.name}</TableCell>
+                                <TableCell>{player}</TableCell>
                                 <TableCell>N/A</TableCell>
                                 <TableCell>N/A</TableCell>
                             </TableRow>
