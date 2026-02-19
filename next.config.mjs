@@ -9,7 +9,7 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: 'https://trackmania.exchange',
+                hostname: 'trackmania.exchange',
             },
         ],
     },

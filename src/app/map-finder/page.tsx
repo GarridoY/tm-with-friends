@@ -1,18 +1,12 @@
 "use client";
 
-import { FindRandomMap } from "@/apis/mania-exchange-api";
+import { FindRandomMap, MapSearchResult } from "@/apis/mania-exchange-api";
 import { Button } from "@/components/ui/button";
-import { fetchDisplayNameFromAccountId } from "@/services/account-service";
-import { fetchMap } from "@/services/map-service";
-import { TrackmaniaMap } from "@/types/trackmania-map";
 import { useState } from "react";
 import Image from "next/image";
 import SkeletonCard from "@/components/skeleton-card";
 import Header from "@/components/header";
-
-interface TrackmaniaMapExtended extends TrackmaniaMap {
-	authorName: string
-}
+import Link from "next/link";
 
 function translateTextStyling(text: string) {
     const controlCharacterRegex = /\$(w|n|o|i|t|s|g|z|\$)/g;
@@ -21,9 +15,9 @@ function translateTextStyling(text: string) {
 }
 
 export default function MapFinder() {
-	const [mapData, setMapData] = useState<TrackmaniaMapExtended | undefined>();
+	const [mapData, setMapData] = useState<MapSearchResult | undefined>();
 	const [loading, setLoading] = useState<boolean>(false);
-	const [foundMaps, setFoundMaps] = useState<TrackmaniaMapExtended[]>([]);
+	const [foundMaps, setFoundMaps] = useState<MapSearchResult[]>([]);
 
 	async function findMap() {
 		setLoading(true);
@@ -32,22 +26,13 @@ export default function MapFinder() {
 		}
 
 		const maniaData = await FindRandomMap();
-		const data = await fetchMap(maniaData.Results[0].OnlineMapId);
-		if (!data) {
+		if (!maniaData || maniaData.Results.length == 0) {
 			setLoading(false);
 			return;
 		}
 
-		let name = 'Unknown';
-		const nameResponse = await fetchDisplayNameFromAccountId([data.author])
-		if (nameResponse && nameResponse.has(data.author)) {
-			name = nameResponse.get(data.author) as string;
-		}
-		
-		const extra =  {...data, authorName: name}
-
 		setLoading(false);
-		return setMapData(extra);
+		return setMapData(maniaData.Results[0]);
 	}
 
 	return (
@@ -69,15 +54,15 @@ export default function MapFinder() {
 						<div className="lg:w-1/2">
 							{mapData ? 
 							<>
-								<p>{translateTextStyling(mapData.name)} - {mapData.mapId}</p>
-								<p>By {mapData.authorName}</p>
-								<Image src={mapData.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
+								<Link href={`https://trackmania.exchange/mapshow/${mapData.MapId}`}>{translateTextStyling(mapData.Name)} - {mapData.OnlineMapId}</Link>
+								<p>By {mapData.Uploader.Name}</p>
+								<Image src={`https://trackmania.exchange/mapthumb/${mapData.MapId}`} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
 							</>
 							: (loading && <SkeletonCard />)}
 						</div>
 
 						<div className="lg:w-1/2">
-							<p>Previous map: {foundMaps.length > 0 ? translateTextStyling(foundMaps[foundMaps.length - 1].name) : "None"}</p>
+							<p>Previous map: {foundMaps.length > 0 ? translateTextStyling(foundMaps[foundMaps.length - 1].Name) : "None"}</p>
 							{foundMaps.length > 0 && (
 								<p className="text-sm">Found maps: {foundMaps.length}</p>
 							)}
