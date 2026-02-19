@@ -23,8 +23,14 @@ function translateTextStyling(text: string) {
 export default function MapFinder() {
 	const [mapData, setMapData] = useState<TrackmaniaMapExtended | undefined>();
 	const [loading, setLoading] = useState<boolean>(false);
+	const [foundMaps, setFoundMaps] = useState<TrackmaniaMapExtended[]>([]);
 
 	async function findMap() {
+		setLoading(true);
+		if (mapData) {
+			setFoundMaps(prev => [...prev, mapData]);
+		}
+
 		const maniaData = await FindRandomMap();
 		const data = await fetchMap(maniaData.Results[0].OnlineMapId);
 		if (!data) {
@@ -51,17 +57,29 @@ export default function MapFinder() {
 				label="Here you can find a random map from Trackmania Exchange." 
 			/>
 
-			<div className="flex flex-col lg:w-1/3">
-				<Button type="button" className="w-fit mt-2" onClick={() => findMap()}>Find map</Button>
+			<div className="flex flex-col">
 
-				<div className="mt-8 lg:w-[500px]">
-					{mapData ? 
-					<>
-						<p>{translateTextStyling(mapData.name)}</p>
-						<p>By {mapData.authorName}</p>
-						<Image src={mapData.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
-					</>
-					: (loading && <SkeletonCard />)}
+				<Button type="button" className="w-fit mt-2" onClick={() => findMap()} disabled={loading}>Find a random RPG map{loading ? "..." : ""}</Button>
+
+				<hr className="mt-4"/>
+
+				<div className="flex flex-row gap-12 mt-4">
+					<div className="lg:w-1/2">
+						{mapData ? 
+						<>
+							<p>{translateTextStyling(mapData.name)}</p>
+							<p>By {mapData.authorName}</p>
+							<Image src={mapData.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
+						</>
+						: (loading && <SkeletonCard />)}
+					</div>
+
+					<div className="lg:w-1/2">
+						<p>Previous map: {foundMaps.length > 0 ? translateTextStyling(foundMaps[foundMaps.length - 1].name) : "None"}</p>
+						{foundMaps.length > 0 && (
+							<p className="text-sm">Found maps: {foundMaps.length}</p>
+						)}
+					</div>
 				</div>
 			</div>
 		</>
