@@ -61,26 +61,30 @@ export default function MapFinder() {
 
 				<Button type="button" className="w-fit mt-2" onClick={() => findMap()} disabled={loading}>Find a random RPG map{loading ? "..." : ""}</Button>
 
-				<hr className="mt-4"/>
+				{mapData && (
+				<>
+					<hr className="mt-4"/>
 
-				<div className="flex flex-row gap-12 mt-4">
-					<div className="lg:w-1/2">
-						{mapData ? 
-						<>
-							<p>{translateTextStyling(mapData.name)}</p>
-							<p>By {mapData.authorName}</p>
-							<Image src={mapData.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
-						</>
-						: (loading && <SkeletonCard />)}
-					</div>
+					<div className="flex flex-row gap-12 mt-4">
+						<div className="lg:w-1/2">
+							{mapData ? 
+							<>
+								<p>{translateTextStyling(mapData.name)}</p>
+								<p>By {mapData.authorName}</p>
+								<Image src={mapData.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
+							</>
+							: (loading && <SkeletonCard />)}
+						</div>
 
-					<div className="lg:w-1/2">
-						<p>Previous map: {foundMaps.length > 0 ? translateTextStyling(foundMaps[foundMaps.length - 1].name) : "None"}</p>
-						{foundMaps.length > 0 && (
-							<p className="text-sm">Found maps: {foundMaps.length}</p>
-						)}
+						<div className="lg:w-1/2">
+							<p>Previous map: {foundMaps.length > 0 ? translateTextStyling(foundMaps[foundMaps.length - 1].name) : "None"}</p>
+							{foundMaps.length > 0 && (
+								<p className="text-sm">Found maps: {foundMaps.length}</p>
+							)}
+						</div>
 					</div>
-				</div>
+				</>
+				)}
 			</div>
 		</>
 	);
