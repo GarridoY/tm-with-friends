@@ -69,7 +69,7 @@ export default function MapFinder() {
 						<div className="lg:w-1/2">
 							{mapData ? 
 							<>
-								<p>{translateTextStyling(mapData.name)}</p>
+								<p>{translateTextStyling(mapData.name)} - {mapData.mapId}</p>
 								<p>By {mapData.authorName}</p>
 								<Image src={mapData.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
 							</>
