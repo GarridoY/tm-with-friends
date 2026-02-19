@@ -107,14 +107,6 @@ export default function MultiRecordsSearch() {
         }));
     }
 
-    const addPlayer = () => {
-        setPlayers([...players, { id: players.length + 1, name: '' }])
-    }
-
-    const removePlayer = (playerId: number) => {
-        setPlayers([...players.filter(player => player.id != playerId)])
-    }
-
     const tryFeature = () => {
         setMapId('1642ef95-643a-44b8-ba94-8377aea6e5ba'); // https://trackmania.exchange/mapshow/178497
         setPlayers([ 
@@ -142,17 +134,14 @@ export default function MultiRecordsSearch() {
 
                     { players.map(player => {
                         return (
-                            <div className="flex flex-row items-center" key={player.id}>
-                                <div>
-                                    <Label htmlFor={'id'+player.id} className="pb-2">Player {player.id}</Label>
-                                    <Input type="text" name={'id'+player.id} placeholder="Display name" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} />
-                                </div>
-                                <Button type="button" className="ml-2 mt-6" onClick={() => removePlayer(player.id)}>%</Button>
+                            <div className="flex flex-col items-start mt-4" key={player.id}>
+                                <Label htmlFor={'id'+player.id} className="pb-2">Player {player.id}</Label>
+                                <Input type="text" name={'id'+player.id} placeholder="Display name" value={player.name} onChange={(e) => handleNameChange(player.id, e.target.value)} />
                             </div>
                         )
                     })}
 
-                    <Button type="button" className="w-fit mt-2" onClick={addPlayer}>+ Add player</Button>
+                    <Button type="button" className="w-fit mt-2" onClick={() => router.push('/group/management')}>Edit group</Button>
 
                     <div className="pt-4">
                         <Button type="submit" className="w-full" onClick={handleClick} disabled={players.length == 0}>{ loading ? 'Loading... ' : 'Submit'}</Button>
