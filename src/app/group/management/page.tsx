@@ -7,12 +7,17 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 
 function getGroup(): { name: string, members: string[] } | null {
-	const group = localStorage.getItem("group");
+	let group = null;
+	if (typeof window !== "undefined") {
+		group = window.localStorage.getItem("group");
+	}
 	return group ? JSON.parse(group) : null;
 }
 
 function saveGroup(group: { name: string, members: string[] }) {
-	localStorage.setItem("group", JSON.stringify(group));
+	if (typeof window !== "undefined") {
+		localStorage.setItem("group", JSON.stringify(group));
+	}
 }
 
 export default function GroupManagement() {
