@@ -7,6 +7,10 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'core.trackmania.nadeo.live',
             },
+            {
+                protocol: 'https',
+                hostname: 'https://trackmania.exchange',
+            },
         ],
     },
 };
