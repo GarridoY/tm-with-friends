@@ -85,10 +85,12 @@ export default function MultiRecordsSearch() {
 
     const tryFeature = () => {
         setMapId('1642ef95-643a-44b8-ba94-8377aea6e5ba'); // https://trackmania.exchange/mapshow/178497
-        setPlayers([ 
-            'duedreng3n',
-            'Wirtual'
-        ])
+        if (players.length == 0) {
+            setPlayers([ 
+                'duedreng3n',
+                'Wirtual'
+            ])
+        }
     } 
 
     return (
