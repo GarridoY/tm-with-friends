@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId, fetchDisplayNameFromAccountIds } from "@/apis/account-api";
+import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId } from "@/apis/account-api";
 import { fetchMapRecords } from "@/apis/map-records-api";
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,11 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { TrackmaniaRecordExtended, TrackmaniaRecord } from "@/types/trackmania-records";
 import { getGroup } from "@/util/localStorageUtil";
 import { Label } from "@radix-ui/react-label";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { SyntheticEvent, useEffect, useState } from "react";
 
 export default function PlayedBefore() {
     const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const params = new URLSearchParams(searchParams);
     const [players, setPlayers] = useState<string[]>([""]);
 
     useEffect(() => {
@@ -27,7 +24,7 @@ export default function PlayedBefore() {
         }
     }, []);
 
-    const [mapId, setMapId] = useState(params.has('mapId') ? params.get('mapId') as string : '');
+    const [mapId, setMapId] = useState<string>("");
     const [mapRecordsData, setMapRecordsData] = useState<TrackmaniaRecordExtended[] | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -53,15 +50,6 @@ export default function PlayedBefore() {
         const extendedMapRecords = await supplyDisplayName(mapRecords);
         setLoading(false);
         setMapRecordsData(extendedMapRecords);
-        
-        updateSearchParams();
-    }
-
-    // Input in search params to allow sharing
-    const updateSearchParams = () => {
-        const params = new URLSearchParams(searchParams);
-        params.set('mapId', mapId);
-        router.push(`${pathname}?${params.toString()}`)
     }
 
     const supplyDisplayName = async (records: TrackmaniaRecord[]): Promise<TrackmaniaRecordExtended[]> => {

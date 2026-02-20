@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchDisplayNameFromAccountId, fetchDisplayNameFromAccountIds } from "@/apis/account-api";
+import { fetchDisplayNameFromAccountId } from "@/apis/account-api";
 import { fetchMap } from "@/apis/map-api";
 import Header from "@/components/header";
 import SkeletonCard from "@/components/skeleton-card";
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TrackmaniaMap } from "@/types/trackmania-map";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState, SyntheticEvent } from "react";
 import Image from "next/image";
 import { translateTextStyling } from "@/util/trackmaniaMapUtil";
@@ -18,16 +17,17 @@ interface TrackmaniaMapExtended extends TrackmaniaMap {
 }
 
 export default function MapLookupPage() {
-    const router = useRouter();
-    const pathname = usePathname();
-    const searchParams = useSearchParams();
-    const params = new URLSearchParams(searchParams);
-
-    const [mapId, setMapId] = useState(params.has('mapId') ? params.get('mapId') as string : '');
+    const [mapId, setMapId] = useState<string>("");
     const [mapData, setMapData] = useState<TrackmaniaMapExtended | undefined>();
     const [loading, setLoading] = useState<boolean>(false);
 
-    async function fetchData() {
+    async function handleClick(event: SyntheticEvent) {
+        event.preventDefault();
+
+        // Reset map data and show loading state while fetching
+        setMapData(undefined);
+        setLoading(true);
+        
         const map = await fetchMap(mapId);
         if (!map) {
             setLoading(false);
@@ -37,28 +37,12 @@ export default function MapLookupPage() {
         const authorName = await fetchDisplayNameFromAccountId(map.author)
         const extra =  {...map, authorName: authorName || "Unknown"} as TrackmaniaMapExtended;
 
+        setMapData(extra);
         setLoading(false);
-        return setMapData(extra);
-    }
-
-    function handleClick(event: SyntheticEvent) {
-        event.preventDefault();
-        setMapData(undefined);
-        setLoading(true);
-        fetchData();
-
-        updateSearchParams();
     }
 
     const tryFeature = () => {
         setMapId('1642ef95-643a-44b8-ba94-8377aea6e5ba'); // https://trackmania.exchange/mapshow/178497
-    }
-
-    // Input in search params to allow sharing
-    const updateSearchParams = () => {
-        const params = new URLSearchParams(searchParams);
-        params.set('mapId', mapId);
-        router.push(`${pathname}?${params.toString()}`)
     }
     
     return (
