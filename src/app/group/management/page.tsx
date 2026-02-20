@@ -4,21 +4,9 @@ import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getGroup, saveGroup } from "@/util/localStorageUtil";
 import { useState } from "react";
 
-function getGroup(): { name: string, members: string[] } | null {
-	let group = null;
-	if (typeof window !== "undefined") {
-		group = window.localStorage.getItem("group");
-	}
-	return group ? JSON.parse(group) : null;
-}
-
-function saveGroup(group: { name: string, members: string[] }) {
-	if (typeof window !== "undefined") {
-		localStorage.setItem("group", JSON.stringify(group));
-	}
-}
 
 export default function GroupManagement() {
 	const [group, setGroup] = useState<{ name: string, members: string[] }>(getGroup() || { name: "My Group", members: [""] });

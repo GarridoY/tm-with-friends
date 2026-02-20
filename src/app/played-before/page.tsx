@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { TrackmaniaRecordExtended, TrackmaniaRecord } from "@/types/trackmania-records";
+import { getGroup } from "@/util/localStorageUtil";
 import { Label } from "@radix-ui/react-label";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SyntheticEvent, useEffect, useState } from "react";
@@ -20,8 +21,7 @@ export default function PlayedBefore() {
     const [players, setPlayers] = useState<string[]>([""]);
 
     useEffect(() => {
-        const group = typeof window !== "undefined" ? localStorage.getItem("group") : null;
-        const groupObj: { name: string, members: string[] } | null = group ? JSON.parse(group) : null;
+        const groupObj = getGroup();
         if (groupObj) {
             setPlayers(groupObj.members);
         }
