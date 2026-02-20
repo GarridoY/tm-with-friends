@@ -11,7 +11,7 @@ export async function fetchMap(mapId: string): Promise<TrackmaniaMap | null> {
     });
     if (!response || response.status !== 200) { return null; }
     
-    const json = response.data as TrackmaniaMap & ErrorResponse;
+    const json = response.data as TrackmaniaMap;
     if (!json.mapId) { return null; }
 
     return json;

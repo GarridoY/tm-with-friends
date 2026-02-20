@@ -1,7 +1,5 @@
 "use client";
 
-import { fetchDisplayNameFromAccountId } from "@/apis/account-api";
-import { fetchMap } from "@/apis/map-api";
 import Header from "@/components/header";
 import SkeletonCard from "@/components/skeleton-card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +9,8 @@ import { TrackmaniaMap } from "@/types/trackmania-map";
 import { useState, SyntheticEvent } from "react";
 import Image from "next/image";
 import { translateTextStyling } from "@/util/trackmaniaMapUtil";
+import { useGetMap } from "@/hooks/useMaps";
+import { useGetDisplayNamesFromAccountIds } from "@/hooks/useAccounts";
 
 interface TrackmaniaMapExtended extends TrackmaniaMap {
     authorName: string
@@ -18,27 +18,15 @@ interface TrackmaniaMapExtended extends TrackmaniaMap {
 
 export default function MapLookupPage() {
     const [mapId, setMapId] = useState<string>("");
-    const [mapData, setMapData] = useState<TrackmaniaMapExtended | undefined>();
-    const [loading, setLoading] = useState<boolean>(false);
+    const { data: map, isLoading: isMapLoading, refetch: fetchMap } = useGetMap(mapId, false);
+    const { data: displayName, isLoading: isDisplayNameLoading } = useGetDisplayNamesFromAccountIds(map ? map.author : "", !!map);
+
+    const mapWithAuthorName = map && displayName ? {...map, authorName: displayName} as TrackmaniaMapExtended : null;
 
     async function handleClick(event: SyntheticEvent) {
         event.preventDefault();
 
-        // Reset map data and show loading state while fetching
-        setMapData(undefined);
-        setLoading(true);
-        
-        const map = await fetchMap(mapId);
-        if (!map) {
-            setLoading(false);
-            return;
-        }
-
-        const authorName = await fetchDisplayNameFromAccountId(map.author)
-        const extra =  {...map, authorName: authorName || "Unknown"} as TrackmaniaMapExtended;
-
-        setMapData(extra);
-        setLoading(false);
+        await fetchMap();
     }
 
     const tryFeature = () => {
@@ -68,13 +56,13 @@ export default function MapLookupPage() {
                 </div>
 
                 <div className="mt-8 lg:w-[500px]">
-                    {mapData ? 
+                    {mapWithAuthorName ? 
                     <>
-                        <p>{translateTextStyling(mapData.name)}</p>
-                        <p>By {mapData.authorName}</p>
-                        <Image src={mapData.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
+                        <p>{translateTextStyling(mapWithAuthorName.name)}</p>
+                        <p>By {mapWithAuthorName.authorName}</p>
+                        <Image src={mapWithAuthorName.thumbnailUrl} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
                     </>
-                    : (loading && <SkeletonCard />)}
+                    : (isMapLoading || isDisplayNameLoading ? <SkeletonCard /> : null)}
                 </div>
             </div>
         </>
