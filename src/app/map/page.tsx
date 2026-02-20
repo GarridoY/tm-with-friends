@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchDisplayNameFromAccountId } from "@/apis/account-api";
+import { fetchDisplayNameFromAccountId, fetchDisplayNameFromAccountIds } from "@/apis/account-api";
 import { fetchMap } from "@/apis/map-api";
 import Header from "@/components/header";
 import SkeletonCard from "@/components/skeleton-card";
@@ -28,19 +28,14 @@ export default function MapLookupPage() {
     const [loading, setLoading] = useState<boolean>(false);
 
     async function fetchData() {
-        const data = await fetchMap(mapId);
-        if (!data) {
+        const map = await fetchMap(mapId);
+        if (!map) {
             setLoading(false);
             return;
         }
 
-        let name = 'Unknown';
-        const nameResponse = await fetchDisplayNameFromAccountId([data.author])
-        if (nameResponse && nameResponse.has(data.author)) {
-            name = nameResponse.get(data.author) as string;
-        }
-        
-        const extra =  {...data, authorName: name}
+        const authorName = await fetchDisplayNameFromAccountId(map.author)
+        const extra =  {...map, authorName: authorName || "Unknown"} as TrackmaniaMapExtended;
 
         setLoading(false);
         return setMapData(extra);

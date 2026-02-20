@@ -24,7 +24,7 @@ export async function fetchAccountIdFromDisplayName(displayNames: string[]): Pro
     return map;
 }
 
-export async function fetchDisplayNameFromAccountId(accountIds: string[]): Promise<Map<string, string> | null> {
+export async function fetchDisplayNameFromAccountIds(accountIds: string[]): Promise<Map<string, string> | null> {
     let displayNames = "";
     for (let i = 0; i < accountIds.length; i++) {
         displayNames += "accountId[]="+accountIds[i];
@@ -44,4 +44,19 @@ export async function fetchDisplayNameFromAccountId(accountIds: string[]): Promi
     if (map.size == 0) { return null; }
     
     return map;
+}
+
+export async function fetchDisplayNameFromAccountId(accountId: string): Promise<string | null> {
+    const response = await nadeoOAuthClient(`/api/display-names?accountId[]=${accountId}`).catch(err => {
+        console.error(err);
+        return null;
+    });
+    if (!response || response.status !== 200) { return null; }
+
+    // The API returns a map of accountId to displayName, but since we're only querying for one accountId, we can just return the first value in the map.
+    const json = response.data;
+    const map = new Map(Object.entries(json)) as Map<string, string>;
+    if (map.size == 0) { return null; }
+    
+    return map.values().next().value || null;
 }

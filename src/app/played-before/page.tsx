@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId } from "@/apis/account-api";
+import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId, fetchDisplayNameFromAccountIds } from "@/apis/account-api";
 import { fetchMapRecords } from "@/apis/map-records-api";
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,13 @@ export default function PlayedBefore() {
     const [mapRecordsData, setMapRecordsData] = useState<TrackmaniaRecordExtended[] | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const fetchData = async () => {
+    const submit = async (event: SyntheticEvent) => {
+        event.preventDefault();
+        
+        // Reset data and show loading state while fetching
+        setLoading(true);
+        setMapRecordsData([]);
+
         const accountIds = await fetchAccountIdFromDisplayName(players);
         if (!accountIds) {
             setLoading(false);
@@ -46,16 +52,7 @@ export default function PlayedBefore() {
 
         const extendedMapRecords = await supplyDisplayName(mapRecords);
         setLoading(false);
-        return setMapRecordsData(extendedMapRecords);
-    }
-
-    const submit = (event: SyntheticEvent) => {
-        event.preventDefault();
-        
-        setLoading(true);
-        setMapRecordsData([]);
-
-        fetchData();
+        setMapRecordsData(extendedMapRecords);
         
         updateSearchParams();
     }
@@ -67,18 +64,12 @@ export default function PlayedBefore() {
         router.push(`${pathname}?${params.toString()}`)
     }
 
-    const handleNameChange = (id: number, newName: string) => {
-        setPlayers(players.map((player, index) => index === id ? newName : player));
-    }
-
-    const supplyDisplayName = async (data: TrackmaniaRecord[]): Promise<TrackmaniaRecordExtended[]> => {
-        return await Promise.all(data.map(async (v) => {
-            const response = await fetchDisplayNameFromAccountId([v.accountId]);
-            if (response && response.has(v.accountId)) {
-                return {...v, displayName: response.get(v.accountId) as string};
-            } else {
-                return {...v, displayName: "Unknown"};
-            }
+    const supplyDisplayName = async (records: TrackmaniaRecord[]): Promise<TrackmaniaRecordExtended[]> => {
+        // If we store the accountId to displayName mapping in local storage, we can avoid making multiple 
+        // API calls for the same accountId when multiple players have the same record.
+        return await Promise.all(records.map(async (v) => {
+            const response = await fetchDisplayNameFromAccountId(v.accountId);
+            return {...v, displayName: response || "Unknown"} as TrackmaniaRecordExtended;
         }));
     }
 
@@ -113,7 +104,7 @@ export default function PlayedBefore() {
                         return (
                             <div className="flex flex-col items-start mt-4" key={index}>
                                 <Label htmlFor={'id'+index} className="pb-2">Player {index + 1}</Label>
-                                <Input type="text" name={'id'+index} placeholder="Display name" value={player} onChange={(e) => handleNameChange(index, e.target.value)} />
+                                <Input type="text" name={'id'+index} placeholder="Display name" value={player} disabled />
                             </div>
                         )
                     })}
