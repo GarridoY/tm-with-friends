@@ -57,7 +57,7 @@ interface OAuthResponse {
 
 // Uses fetch instead of axois as the function is used to get the access token for the nadeo server client, which uses axios. 
 // Using fetch here prevents circular dependencies between the two clients.
-export async function fetchNadeoOAuthAccessToken(): Promise<OAuthResponse> {
+async function fetchNadeoOAuthAccessToken(): Promise<OAuthResponse> {
     const CLIENT_ID = process.env.CLIENT_ID as string;
     const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
 
