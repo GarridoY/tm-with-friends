@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const manieExchangeServiceAxiosInstance = axios.create({
+const maniaExhangeClient = axios.create({
 	baseURL: "https://trackmania.exchange/api",
 	headers: {
     	"User-Agent": "Trackmania with Friends / duedreng3n / https://github.com/GarridoY/tm-with-friends"
@@ -8,7 +8,7 @@ const manieExchangeServiceAxiosInstance = axios.create({
 });
 
 // Add a request interceptor
-manieExchangeServiceAxiosInstance.interceptors.request.use(
+maniaExhangeClient.interceptors.request.use(
 	async function (config) {
 		console.log(`${config.method?.toUpperCase()} ${config.url}`)
 		return config;
@@ -20,4 +20,4 @@ manieExchangeServiceAxiosInstance.interceptors.request.use(
 	}
 );
 
-export default manieExchangeServiceAxiosInstance;
+export default maniaExhangeClient;

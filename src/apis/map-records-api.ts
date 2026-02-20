@@ -1,6 +1,6 @@
 "use server"
 
-import serverServiceAxiosInstance from "@/lib/serverServiceAxiosInstance";
+import nadeoServerClient from "@/apis/clients/nadeo-server-client";
 import { TrackmaniaRecord } from "../types/trackmania-records";
 
 export async function fetchMapRecords(accounts: string[], mapId: string): Promise<TrackmaniaRecord[] | null> {
@@ -12,7 +12,7 @@ export async function fetchMapRecords(accounts: string[], mapId: string): Promis
         }
     }
 
-    const response = await serverServiceAxiosInstance.get(`/v2/mapRecords/?accountIdList=${accountIdList}&mapId=${mapId}`).catch(err => {
+    const response = await nadeoServerClient.get(`/v2/mapRecords/?accountIdList=${accountIdList}&mapId=${mapId}`).catch(err => {
         console.error(err);
         return null;
     });

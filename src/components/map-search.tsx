@@ -3,12 +3,12 @@
 import { SyntheticEvent, useState } from "react";
 import Image from "next/image";
 import { TrackmaniaMap } from "@/types/trackmania-map";
-import { fetchMap } from "@/services/map-service";
+import { fetchMap } from "@/apis/map-api";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import SkeletonCard from "./skeleton-card";
-import { fetchDisplayNameFromAccountId } from "@/services/account-service";
+import { fetchDisplayNameFromAccountId } from "@/apis/account-api";
 import Header from "./header";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 

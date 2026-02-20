@@ -2,8 +2,8 @@
 
 import { SyntheticEvent, useEffect, useState } from "react"
 import { TrackmaniaRecord, TrackmaniaRecordExtended } from "@/types/trackmania-records";
-import { fetchMapRecords } from "@/services/records-service";
-import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId } from "@/services/account-service";
+import { fetchMapRecords } from "@/apis/map-records-api";
+import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId } from "@/apis/account-api";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";

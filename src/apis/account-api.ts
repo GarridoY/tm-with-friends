@@ -1,6 +1,6 @@
 "use server"
 
-import oauthServiceAxiosInstance from "@/lib/oauthServiceAxiosInstance";
+import nadeoOAuthClient from "@/apis/clients/nadeo-oauth-client";
 
 export async function fetchAccountIdFromDisplayName(displayNames: string[]): Promise<Map<string, string> | null> {
     let accountIds = "";
@@ -11,7 +11,7 @@ export async function fetchAccountIdFromDisplayName(displayNames: string[]): Pro
         }
     }
 
-    const response = await oauthServiceAxiosInstance(`/api/display-names/account-ids?${accountIds}`).catch(err => {
+    const response = await nadeoOAuthClient(`/api/display-names/account-ids?${accountIds}`).catch(err => {
         console.error(err);
         return null;
     });
@@ -33,7 +33,7 @@ export async function fetchDisplayNameFromAccountId(accountIds: string[]): Promi
         }
     }
 
-    const response = await oauthServiceAxiosInstance(`/api/display-names?${displayNames}`).catch(err => {
+    const response = await nadeoOAuthClient(`/api/display-names?${displayNames}`).catch(err => {
         console.error(err);
         return null;
     });

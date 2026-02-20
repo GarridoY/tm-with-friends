@@ -1,13 +1,15 @@
 "use client";
 
-import { FindRandomMap, MapSearchResult } from "@/apis/mania-exchange-api";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Image from "next/image";
 import SkeletonCard from "@/components/skeleton-card";
 import Header from "@/components/header";
 import Link from "next/link";
+import { MapSearchResult, FindRandomMap } from "@/apis/map-api";
 
+// Trackmania map names can contain control characters for styling, this function removes them for better display.
+// These are only present when interacting with the Server service API from Nadeo.
 function translateTextStyling(text: string) {
     const controlCharacterRegex = /\$(w|n|o|i|t|s|g|z|\$)/g;
     const colorRegex = /\$(0|1|2|3|4|5|6|7|8|9|a|A|b|B|c|C|d|D|e|E|f|F){3}/g;
