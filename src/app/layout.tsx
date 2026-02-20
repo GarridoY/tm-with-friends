@@ -4,6 +4,7 @@ import "./globals.css";
 import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import Link from "next/link";
 import Image from "next/image";
+import Providers from "./providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -56,7 +57,9 @@ export default function RootLayout({
 
           <main className="flex justify-center p-4">
             <div className="flex flex-col min-w-fit lg:min-w-[1460px]">
-              {children}
+              <Providers>
+                {children}
+              </Providers>
             </div>
           </main>
         

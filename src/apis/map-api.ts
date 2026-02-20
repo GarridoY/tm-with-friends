@@ -33,13 +33,13 @@ interface MapUploader {
 	Name: string;
 }
 
-export async function FindRandomMap(): Promise<MapSearchResponse> {
+export async function FindRandomMap(): Promise<MapSearchResult> {
 	let params = new URLSearchParams({
 		"fields": "MapId,OnlineMapId,Uploader.Name,Name",
 		"count": "1",
 		"tag": "4",
 		"random": "1"
 	});
-	const response = await maniaExhangeClient.get(`/maps?${params}`);
-	return response.data as MapSearchResponse;
+	const response = await maniaExhangeClient.get<MapSearchResponse>(`/maps?${params}`);
+	return response.data.Results[0];
 }
