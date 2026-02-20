@@ -33,7 +33,7 @@ interface MapUploader {
 	Name: string;
 }
 
-export async function FindRandomMap(): Promise<MapSearchResult> {
+export async function findRandomMap(): Promise<MapSearchResult> {
 	let params = new URLSearchParams({
 		"fields": "MapId,OnlineMapId,Uploader.Name,Name",
 		"count": "1",
