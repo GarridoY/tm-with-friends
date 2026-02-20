@@ -4,14 +4,8 @@ import nadeoServerClient from "@/apis/clients/nadeo-server-client";
 import { TrackmaniaRecord } from "../types/trackmania-records";
 
 export async function fetchMapRecords(accounts: string[], mapId: string): Promise<TrackmaniaRecord[] | null> {
-    let accountIdList = "";
-    for (let i = 0; i < accounts.length; i++) {
-        accountIdList += accounts[i];
-        if (i != (accounts.length - 1)) {
-            accountIdList += ","
-        }
-    }
-
+    let accountIdList = accounts.join(",");
+    
     const response = await nadeoServerClient.get(`/v2/mapRecords/?accountIdList=${accountIdList}&mapId=${mapId}`).catch(err => {
         console.error(err);
         return null;

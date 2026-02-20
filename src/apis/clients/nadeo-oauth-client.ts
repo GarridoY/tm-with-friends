@@ -44,7 +44,6 @@ nadeoOAuthClient.interceptors.request.use(
 	},
 	function (error) {
 		console.error(error)
-		// Handle the error
 		return Promise.reject(error);
 	}
 );

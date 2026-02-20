@@ -14,9 +14,7 @@ const nadeoServerClient = axios.create({
 nadeoServerClient.interceptors.request.use(
 	async function (config) {
 		if (!accessToken) {
-			console.log("empty token, fetching new token")
 			const authResponse = await fetchNadeoServerTokens();
-			// TODO What should happen here?
 			if (!authResponse) {
 				return config;
 			}
@@ -32,7 +30,6 @@ nadeoServerClient.interceptors.request.use(
 		// Fetch new access token if expired
 		const expired = Date.now() > new Date(jwt.exp * 1000).getTime();
 		if (expired) {
-			console.log("expired token, fetching new token")
 			// Access token is Base64 encoded on retrieval
 			const authResponse = await fetchNadeoServerTokens();
 			if (!authResponse) {
@@ -47,7 +44,6 @@ nadeoServerClient.interceptors.request.use(
 	},
 	function (error) {
 		console.error(error)
-		// Handle the error
 		return Promise.reject(error);
 	}
 );
