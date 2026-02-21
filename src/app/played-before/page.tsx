@@ -1,21 +1,36 @@
 "use client";
 
-import { fetchAccountIdFromDisplayName, fetchDisplayNameFromAccountId } from "@/apis/account-api";
+import { fetchAccountIdsFromDisplayNames } from "@/apis/account-api";
 import { fetchMapRecords } from "@/apis/map-records-api";
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { TrackmaniaRecordExtended, TrackmaniaRecord } from "@/types/trackmania-records";
+import { TrackmaniaRecordExtended } from "@/types/trackmania-records";
 import { getGroup } from "@/util/localStorageUtil";
 import { Label } from "@radix-ui/react-label";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { SyntheticEvent, useEffect, useState } from "react";
 
+function getKeyByValue(map: Map<string, string>, value: string): string | undefined {
+    for (let [key, val] of map.entries()) {
+        if (val === value) {
+            return key;
+        }
+    }
+    return undefined;
+}
+
 export default function PlayedBefore() {
     const router = useRouter();
+    const queryClient = useQueryClient();
+
     const [players, setPlayers] = useState<string[]>([""]);
+    const [mapId, setMapId] = useState<string>("");
+    const [mapRecordsData, setMapRecordsData] = useState<(TrackmaniaRecordExtended & {displayName: string})[] | null>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         const groupObj = getGroup();
@@ -24,41 +39,25 @@ export default function PlayedBefore() {
         }
     }, []);
 
-    const [mapId, setMapId] = useState<string>("");
-    const [mapRecordsData, setMapRecordsData] = useState<TrackmaniaRecordExtended[] | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
-
-    const submit = async (event: SyntheticEvent) => {
-        event.preventDefault();
-        
-        // Reset data and show loading state while fetching
+    const submit = async (e: SyntheticEvent) => {
+        e.preventDefault();
         setLoading(true);
-        setMapRecordsData([]);
 
-        const accountIds = await fetchAccountIdFromDisplayName(players);
-        if (!accountIds) {
-            setLoading(false);
-            return;
-        }
+        const accountIds = await queryClient.fetchQuery({
+            queryKey: ['accountIds', players],
+            queryFn: () => fetchAccountIdsFromDisplayNames(players),
+        });
 
-        const mapRecords = await fetchMapRecords(Array.from(accountIds.values()), mapId);
-        if (!mapRecords) {
-            setLoading(false);
-            return;
-        }
+        const mapRecords = await queryClient.fetchQuery({
+            queryKey: ['mapRecords', Array.from(accountIds?.values() || []), mapId],
+            queryFn: () =>  fetchMapRecords(Array.from(accountIds?.values() || []), mapId),
+        });
 
-        const extendedMapRecords = await supplyDisplayName(mapRecords);
+        setMapRecordsData(mapRecords && accountIds ? mapRecords.map(record => {
+            const displayName = getKeyByValue(accountIds, record.accountId) || "Unknown";
+            return {...record, displayName} as TrackmaniaRecordExtended;
+        }) : null);
         setLoading(false);
-        setMapRecordsData(extendedMapRecords);
-    }
-
-    const supplyDisplayName = async (records: TrackmaniaRecord[]): Promise<TrackmaniaRecordExtended[]> => {
-        // If we store the accountId to displayName mapping in local storage, we can avoid making multiple 
-        // API calls for the same accountId when multiple players have the same record.
-        return await Promise.all(records.map(async (v) => {
-            const response = await fetchDisplayNameFromAccountId(v.accountId);
-            return {...v, displayName: response || "Unknown"} as TrackmaniaRecordExtended;
-        }));
     }
 
     const tryFeature = () => {
@@ -100,7 +99,7 @@ export default function PlayedBefore() {
                     <Button type="button" className="w-fit mt-2" onClick={() => router.push('/group/management')}>Edit group</Button>
 
                     <div className="pt-4">
-                        <Button type="submit" className="w-full" onClick={submit} disabled={loading}>{ loading ? 'Loading... ' : 'Submit'}</Button>
+                        <Button type="submit" className="w-full" onClick={submit} disabled={loading}>{loading ? 'Loading...' : 'Submit'}</Button>
                     </div>
                 </div>
 
@@ -116,7 +115,7 @@ export default function PlayedBefore() {
                     <TableBody>
 
                     {/* Loading or initial state */}
-                    { (loading || !mapRecordsData) && <><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>}
+                    { loading || !mapRecordsData && <><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>}
 
                     {/* Players in group with records */}
                     { !loading && mapRecordsData && mapRecordsData.length > 0 && mapRecordsData.sort(compareRecords).map((record, index) => {

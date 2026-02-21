@@ -2,7 +2,7 @@
 
 import nadeoOAuthClient from "@/apis/clients/nadeo-oauth-client";
 
-export async function fetchAccountIdFromDisplayName(displayNames: string[]): Promise<Map<string, string> | null> {
+export async function fetchAccountIdsFromDisplayNames(displayNames: string[]): Promise<Map<string, string> | null> {
     var accountIds = displayNames.map(name => `displayName[]=${name}`).join("&");
 
     const response = await nadeoOAuthClient(`/api/display-names/account-ids?${accountIds}`).catch(err => {

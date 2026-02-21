@@ -10,7 +10,7 @@ import { useState, SyntheticEvent } from "react";
 import Image from "next/image";
 import { translateTextStyling } from "@/util/trackmaniaMapUtil";
 import { useGetMap } from "@/hooks/useMaps";
-import { useGetDisplayNamesFromAccountIds } from "@/hooks/useAccounts";
+import { useGetDisplayNameFromAccountId } from "@/hooks/useAccounts";
 
 interface TrackmaniaMapExtended extends TrackmaniaMap {
     authorName: string
@@ -19,7 +19,7 @@ interface TrackmaniaMapExtended extends TrackmaniaMap {
 export default function MapLookupPage() {
     const [mapId, setMapId] = useState<string>("");
     const { data: map, isLoading: isMapLoading, refetch: fetchMap } = useGetMap(mapId, false);
-    const { data: displayName, isLoading: isDisplayNameLoading } = useGetDisplayNamesFromAccountIds(map ? map.author : "", !!map);
+    const { data: displayName, isLoading: isDisplayNameLoading } = useGetDisplayNameFromAccountId(map ? map.author : "", !!map);
 
     const mapWithAuthorName = map && displayName ? {...map, authorName: displayName} as TrackmaniaMapExtended : null;
 
