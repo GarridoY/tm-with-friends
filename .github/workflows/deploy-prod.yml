@@ -29,6 +29,7 @@ jobs:
       run: |
         mkdir -p iac
         cat > iac/secrets.tfvars <<'EOF'
+        google_credentials = "${{ secrets.GOOGLE_CREDENTIALS }}"
         encoded_credentials = "${{ secrets.ENCODED_CREDENTIALS }}"
         client_secret = "${{ secrets.CLIENT_SECRET }}"
         client_id = "${{ secrets.CLIENT_ID }}"

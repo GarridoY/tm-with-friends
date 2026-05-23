@@ -19,6 +19,8 @@ variable "service_name" {
   default = "web1-tm-with-friends"
 }
 
+variable "google_credentials" {}
+
 variable "encoded_credentials" {}
 
 variable "client_secret" {}
