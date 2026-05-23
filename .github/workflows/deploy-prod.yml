@@ -23,9 +23,7 @@ jobs:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
     - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: '1.6.7'
+      uses: hashicorp/setup-terraform@v4
 
     - name: Generate iac/secrets.tfvars
       run: |
