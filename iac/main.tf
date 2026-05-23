@@ -14,7 +14,7 @@ provider "google" {
 }
 
 locals {
-  sa_creds = jsondecode(base64decode(var.google_credentials))
+  sa_creds = jsondecode(var.google_credentials)
 }
 
 import {
