@@ -1,6 +1,12 @@
 name: Deploy to production
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'Optional image to deploy (e.g. garridoy/tm-with-friends:sha). If empty, the `main` tag will be used.'
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -10,22 +16,63 @@ jobs:
       id-token: 'write'
 
     steps:
-    - uses: 'actions/checkout@v4'
+    - uses: 'actions/checkout@v6'
 
     - uses: 'google-github-actions/auth@v2'
       with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-    - id: 'deploy'
-      uses: 'google-github-actions/deploy-cloudrun@v2'
-      with:
-        service: 'web1-tm-with-friends'
-        image: 'docker.io/garridoy/tm-with-friends:latest'
-        region: 'europe-west1'
-        env_vars: |-
-          CLIENT_ID=${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
-          ENCODED_CREDENTIALS=${{ secrets.ENCODED_CREDENTIALS }}
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v4
 
-    - name: 'Use output'
-      run: 'curl "${{ steps.deploy.outputs.url }}"'
+    - name: Generate iac/secrets.tfvars
+      run: |
+        mkdir -p iac
+        cat > iac/secrets.tfvars <<'EOF'
+        encoded_credentials = "${{ secrets.ENCODED_CREDENTIALS }}"
+        client_secret = "${{ secrets.CLIENT_SECRET }}"
+        client_id = "${{ secrets.CLIENT_ID }}"
+        EOF
+
+    - name: Terraform init
+      working-directory: iac
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      run: |
+        terraform init -input=false
+
+    - name: Terraform plan
+      working-directory: iac
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      run: |
+        IMAGE="${{ github.event.inputs.image }}"
+        if [ -z "$IMAGE" ]; then
+          IMAGE="docker.io/garridoy/tm-with-friends:main"
+        fi
+        echo "Using image: $IMAGE"
+        terraform plan -var-file=secrets.tfvars -var="image=$IMAGE" -out=plan.tfplan
+
+    - name: Show plan
+      working-directory: iac
+      run: |
+        terraform show -no-color plan.tfplan
+
+    - name: Terraform apply plan
+      working-directory: iac
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      run: |
+        terraform apply -input=false -auto-approve plan.tfplan
+
+    - name: Remove generated secrets file
+      if: always()
+      run: rm -f iac/secrets.tfvars
+
+    - name: Terraform output and curl
+      working-directory: iac
+      env:
+        GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      run: |
+        uri=$(terraform output -raw uri)
+        echo "Service URI: $uri"
