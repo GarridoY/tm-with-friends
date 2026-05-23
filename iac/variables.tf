@@ -15,15 +15,15 @@ variable "container_name" {
 }
 
 
-variable "service_name" { 
+variable "service_name" {
   default = "web1-tm-with-friends"
 }
 
-variable "encoded_credentials" { }
+variable "encoded_credentials" {}
 
-variable "client_secret" { }
+variable "client_secret" {}
 
-variable "client_id" { }
+variable "client_id" {}
 
 variable "image" {
   description = "Container image to deploy (defaults to the image tag for the main branch)"
