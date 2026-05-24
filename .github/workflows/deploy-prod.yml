@@ -10,6 +10,7 @@ on:
 
 jobs:
   deploy:
+    name: Deploy
     runs-on: ubuntu-latest
     permissions:
       contents: 'read'
@@ -22,15 +23,15 @@ jobs:
       with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v4
+    - name: Set up OpenTofu
+      uses: opentofu/setup-opentofu@v2
 
-    - name: Terraform init
+    - name: OpenTofu init
       working-directory: iac
       run: |
-        terraform init -input=false
+        tofu init -input=false
 
-    - name: Terraform plan
+    - name: OpenTofu plan
       working-directory: iac
       env:
         TF_VAR_google_credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
@@ -43,9 +44,9 @@ jobs:
           IMAGE="docker.io/garridoy/tm-with-friends:main"
         fi
         echo "Using image: $IMAGE"
-        terraform plan -var="image=$IMAGE" -out=plan.tfplan
+        tofu plan -var="image=$IMAGE" -out=plan.tfplan
 
-    - name: Terraform apply plan
+    - name: OpenTofu apply plan
       working-directory: iac
       env:
         TF_VAR_google_credentials: ${{ secrets.GOOGLE_CREDENTIALS }}
@@ -53,10 +54,10 @@ jobs:
         TF_VAR_client_secret: ${{ secrets.CLIENT_SECRET }}
         TF_VAR_client_id: ${{ secrets.CLIENT_ID }}
       run: |
-        terraform apply -input=false -auto-approve plan.tfplan
+        tofu apply -input=false -auto-approve plan.tfplan
 
-    - name: Terraform output and curl
+    - name: OpenTofu output and curl
       working-directory: iac
       run: |
-        uri=$(terraform output -raw uri)
+        uri=$(tofu output -raw uri)
         echo "Service URI: $uri"
