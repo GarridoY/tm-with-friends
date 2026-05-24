@@ -4,32 +4,33 @@ on:
   push:
 
 jobs:
-  terraform-validate:
+  opentofu-validate:
+    name: Validate IaC
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v4
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v2
 
-      - name: Terraform fmt
-        working-directory: iac
-        run: terraform fmt -check
+      - name: OpenTofu fmt
+        run: tofu fmt -check
         continue-on-error: true
 
-      - name: Terraform init
+      - name: OpenTofu init
         working-directory: iac
         run: |
-          terraform init -input=false
+          tofu init -input=false
 
-      - name: Terraform validate
+      - name: OpenTofu validate
         working-directory: iac
         run: |
-          terraform validate
+          tofu validate
 
   docker-build:
-    needs: terraform-validate
+    name: Build Docker image
+    needs: opentofu-validate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -57,6 +58,7 @@ jobs:
             garridoy/tm-with-friends:${{ steps.prep.outputs.sanitized_ref }}
 
   docker-push:
+    name: Push Docker image
     needs: docker-build
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
