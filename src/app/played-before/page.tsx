@@ -1,7 +1,5 @@
 "use client";
 
-import { fetchAccountIdsFromDisplayNames } from "@/apis/account-api";
-import { fetchMapRecords } from "@/apis/map-records-api";
 import Header from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { TrackmaniaRecordExtended } from "@/types/trackmania-records";
 import { getGroup } from "@/util/localStorageUtil";
+import { useGetAccountIdsFromDisplayNames } from "@/hooks/useAccounts";
+import { useGetMapRecords } from "@/hooks/useMapRecords";
 import { Label } from "@radix-ui/react-label";
-import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { SyntheticEvent, useEffect, useState } from "react";
 
@@ -25,12 +24,10 @@ function getKeyByValue(map: Map<string, string>, value: string): string | undefi
 
 export default function PlayedBefore() {
     const router = useRouter();
-    const queryClient = useQueryClient();
 
     const [players, setPlayers] = useState<string[]>([""]);
     const [mapId, setMapId] = useState<string>("");
-    const [mapRecordsData, setMapRecordsData] = useState<(TrackmaniaRecordExtended & {displayName: string})[] | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [shouldSearch, setShouldSearch] = useState(false);
 
     useEffect(() => {
         const groupObj = getGroup();
@@ -39,42 +36,43 @@ export default function PlayedBefore() {
         }
     }, []);
 
-    const submit = async (e: SyntheticEvent) => {
-        e.preventDefault();
-        setLoading(true);
+    const { data: accountIds, isFetching: loadingAccountIds } = useGetAccountIdsFromDisplayNames(players, shouldSearch);
+    const { data: mapRecords, isFetching: loadingRecords } = useGetMapRecords(
+        Array.from(accountIds?.values() || []),
+        mapId,
+        shouldSearch && !!accountIds,
+    );
 
-        const accountIds = await queryClient.fetchQuery({
-            queryKey: ['accountIds', players],
-            queryFn: () => fetchAccountIdsFromDisplayNames(players),
-        });
+    const loading = loadingAccountIds || loadingRecords;
 
-        const mapRecords = await queryClient.fetchQuery({
-            queryKey: ['mapRecords', Array.from(accountIds?.values() || []), mapId],
-            queryFn: () =>  fetchMapRecords(Array.from(accountIds?.values() || []), mapId),
-        });
-
-        setMapRecordsData(mapRecords && accountIds ? mapRecords.map(record => {
+    const mapRecordsData = mapRecords && accountIds
+        ? mapRecords.map(record => {
             const displayName = getKeyByValue(accountIds, record.accountId) || "Unknown";
             return {...record, displayName} as TrackmaniaRecordExtended;
-        }) : null);
-        setLoading(false);
+        })
+        : null;
+
+    const submit = (e: SyntheticEvent) => {
+        e.preventDefault();
+        setShouldSearch(true);
     }
 
     const tryFeature = () => {
         setMapId('1642ef95-643a-44b8-ba94-8377aea6e5ba'); // https://trackmania.exchange/mapshow/178497
+        setShouldSearch(false);
         if (players.length == 0) {
-            setPlayers([ 
+            setPlayers([
                 'duedreng3n',
                 'Wirtual'
             ])
         }
-    } 
+    }
 
     return (
         <>
-            <Header 
-                header="Have we played this?" 
-                label="Check to see if you and your friends has played a specific map" 
+            <Header
+                header="Have we played this?"
+                label="Check to see if you and your friends has played a specific map"
             />
 
             <Button type="button" className="w-fit mb-12" onClick={tryFeature}>Fill form with example data</Button>
@@ -82,10 +80,12 @@ export default function PlayedBefore() {
             <div className="flex flex-col lg:flex-row lg:space-x-4">
 
                 <div className="flex lg:w-1/3 flex-col">
-                    
 
                     <Label htmlFor="mapId" className="pb-2">Map ID</Label>
-                    <Input type="text" name="mapId" placeholder="Map ID" value={mapId} onChange={(e) => setMapId(e.target.value)} />
+                    <Input type="text" name="mapId" placeholder="Map ID" value={mapId} onChange={(e) => {
+                        setMapId(e.target.value);
+                        setShouldSearch(false);
+                    }} />
 
                     { players.map((player, index) => {
                         return (
@@ -114,32 +114,31 @@ export default function PlayedBefore() {
                     </TableHeader>
                     <TableBody>
 
-                    {/* Loading or initial state */}
-                    { loading || !mapRecordsData && <><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>}
+                    { loading && <><TableSkeletonCard /><TableSkeletonCard /><TableSkeletonCard /></>}
 
-                    {/* Players in group with records */}
-                    { !loading && mapRecordsData && mapRecordsData.length > 0 && mapRecordsData.sort(compareRecords).map((record, index) => {
-                        return (
-                            <TableRow key={record.mapRecordId}>
-                                <TableCell className="px-1">{index + 1}</TableCell>
-                                <TableCell>{record.displayName}</TableCell>
-                                <TableCell>{millisToTimestamp(record.recordScore.time)}</TableCell>
-                                <TableCell>{timestampToDate(record.timestamp)}</TableCell>
-                            </TableRow>
-                        )
-                    })}
+                    { !loading && shouldSearch && mapRecordsData !== null && <>
+                        { mapRecordsData.length > 0 && mapRecordsData.sort(compareRecords).map((record, index) => {
+                            return (
+                                <TableRow key={record.mapRecordId}>
+                                    <TableCell className="px-1">{index + 1}</TableCell>
+                                    <TableCell>{record.displayName}</TableCell>
+                                    <TableCell>{millisToTimestamp(record.recordScore.time)}</TableCell>
+                                    <TableCell>{timestampToDate(record.timestamp)}</TableCell>
+                                </TableRow>
+                            )
+                        })}
 
-                    {/* Players in group without records */}
-                    { !loading && mapRecordsData && mapRecordsData.length >= 0 && players.filter(player => !mapRecordsData.map(record => record.displayName).includes(player)).map((player, index) => {
-                        return (
-                            <TableRow key={index}>
-                                <TableCell className="px-1">N/A</TableCell>
-                                <TableCell>{player}</TableCell>
-                                <TableCell>N/A</TableCell>
-                                <TableCell>N/A</TableCell>
-                            </TableRow>
-                        )  
-                    })}
+                        { mapRecordsData.length >= 0 && players.filter(player => !mapRecordsData.map(r => r.displayName).includes(player)).map((player, index) => {
+                            return (
+                                <TableRow key={index}>
+                                    <TableCell className="px-1">N/A</TableCell>
+                                    <TableCell>{player}</TableCell>
+                                    <TableCell>N/A</TableCell>
+                                    <TableCell>N/A</TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </>}
                     </TableBody>
                 </Table>
             </div>
