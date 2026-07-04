@@ -12,6 +12,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Cache OpenTofu providers
+        uses: actions/cache@v4
+        with:
+          path: iac/.terraform
+          key: tofu-${{ hashFiles('iac/.terraform.lock.hcl') }}
+
       - name: Set up OpenTofu
         uses: opentofu/setup-opentofu@v2
 
@@ -54,6 +60,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             garridoy/tm-with-friends:${{ github.sha }}
             garridoy/tm-with-friends:${{ steps.prep.outputs.sanitized_ref }}
@@ -90,6 +98,8 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             garridoy/tm-with-friends:${{ github.sha }}
             garridoy/tm-with-friends:${{ steps.prep.outputs.sanitized_ref }}
@@ -109,6 +119,12 @@ jobs:
       - uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Cache OpenTofu providers
+        uses: actions/cache@v4
+        with:
+          path: iac/.terraform
+          key: tofu-${{ hashFiles('iac/.terraform.lock.hcl') }}
 
       - name: Set up OpenTofu
         uses: opentofu/setup-opentofu@v2
