@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,6 +15,11 @@ import { useGetRandomMap } from "@/hooks/useMaps";
 export default function MapFinder() {
 	const { data: map, isLoading: loading, isError, error, refetch: findRandomMap } = useGetRandomMap(false);
 	const [foundMaps, setFoundMaps] = useState<MapSearchResult[]>([]);
+	const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
+
+	useEffect(() => {
+		setThumbnailLoaded(false);
+	}, [map?.MapId]);
 
 	async function findMap() {
 		if (map) {
@@ -53,13 +58,10 @@ export default function MapFinder() {
 
 					<div className="flex flex-row gap-12 mt-4">
 						<div className="lg:w-1/2">
-							{map ? 
-							<>
-								<Link href={`https://trackmania.exchange/mapshow/${map.MapId}`}>{translateTextStyling(map.Name)} - {map.OnlineMapId}</Link>
-								<p>By {map.Uploader.Name}</p>
-								<Image src={`https://trackmania.exchange/mapthumb/${map.MapId}`} width="0" height="0" sizes="100vw" className="w-full h-auto" alt="Thumbnail" />
-							</>
-							: (loading && <SkeletonCard />)}
+							<Link href={`https://trackmania.exchange/mapshow/${map.MapId}`}>{translateTextStyling(map.Name)} - {map.OnlineMapId}</Link>
+							<p>By {map.Uploader.Name}</p>
+							{!thumbnailLoaded && <SkeletonCard />}
+							<Image src={`https://trackmania.exchange/mapthumb/${map.MapId}`} width="0" height="0" sizes="100vw" className={`w-full h-auto ${thumbnailLoaded ? "block" : "hidden"}`} alt="Thumbnail" unoptimized onLoad={() => setThumbnailLoaded(true)} />
 						</div>
 
 						<div className="lg:w-1/2">
