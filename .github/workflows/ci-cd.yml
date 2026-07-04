@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Cache OpenTofu providers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: iac/.terraform
           key: tofu-${{ hashFiles('iac/.terraform.lock.hcl') }}
@@ -121,7 +121,7 @@ jobs:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
       - name: Cache OpenTofu providers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: iac/.terraform
           key: tofu-${{ hashFiles('iac/.terraform.lock.hcl') }}
