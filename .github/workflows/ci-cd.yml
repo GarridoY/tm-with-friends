@@ -9,8 +9,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      iac: ${{ steps.filter.outputs.iac }}
+      other: ${{ steps.filter.outputs.other }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            iac:
+              - 'iac/**'
+            other:
+              - '**'
+              - '!iac/**'
+          predicate-quantifier: some
+
   opentofu-validate:
     name: Validate IaC
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.iac == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,7 +61,8 @@ jobs:
 
   docker:
     name: Build and push Docker image
-    needs: opentofu-validate
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.other == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
