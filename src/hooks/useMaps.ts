@@ -11,7 +11,7 @@ export function useGetRandomMap(enabled: boolean = true) {
 
 export function useGetMap(mapId: string, enabled: boolean = true) {
 	return useQuery({
-		queryKey: ["map"],
+		queryKey: ["map", mapId],
 		queryFn: () => fetchMap(mapId),
 		enabled: enabled,
 	});

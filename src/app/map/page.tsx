@@ -18,19 +18,20 @@ interface TrackmaniaMapExtended extends TrackmaniaMap {
 
 export default function MapLookupPage() {
     const [mapId, setMapId] = useState<string>("");
-    const { data: map, isLoading: isMapLoading, refetch: fetchMap } = useGetMap(mapId, false);
+    const [shouldSearch, setShouldSearch] = useState(false);
+    const { data: map, isLoading: isMapLoading } = useGetMap(mapId, shouldSearch);
     const { data: displayName, isLoading: isDisplayNameLoading } = useGetDisplayNameFromAccountId(map ? map.author : "", !!map);
 
     const mapWithAuthorName = map && displayName ? {...map, authorName: displayName} as TrackmaniaMapExtended : null;
 
     async function handleClick(event: SyntheticEvent) {
         event.preventDefault();
-
-        await fetchMap();
+        setShouldSearch(true);
     }
 
     const tryFeature = () => {
         setMapId('1642ef95-643a-44b8-ba94-8377aea6e5ba'); // https://trackmania.exchange/mapshow/178497
+        setShouldSearch(false);
     }
     
     return (
@@ -47,7 +48,10 @@ export default function MapLookupPage() {
                     
                     <div className="flex flex-col">
                         <Label htmlFor="mapId" className="pb-2">Map ID</Label>
-                        <Input type="text" id="mapId" placeholder="Map ID" value={mapId} onChange={(e) => setMapId(e.target.value)} />
+                        <Input type="text" id="mapId" placeholder="Map ID" value={mapId} onChange={(e) => {
+                            setMapId(e.target.value);
+                            setShouldSearch(false);
+                        }} />
 
                         <div className="pt-4">
                             <Button type="button" className="w-full" onClick={handleClick}>Submit</Button>
