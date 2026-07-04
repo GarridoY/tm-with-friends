@@ -12,14 +12,20 @@ import { MapSearchResult } from "@/apis/map-api";
 import { translateTextStyling } from "@/util/trackmaniaMapUtil";
 import { useGetRandomMap } from "@/hooks/useMaps";
 
+function MapThumbnail({ map }: { map: MapSearchResult }) {
+	const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
+
+	return (
+		<>
+			{!thumbnailLoaded && <SkeletonCard />}
+			<Image src={`https://trackmania.exchange/mapthumb/${map.MapId}`} width="0" height="0" sizes="100vw" className={`w-full h-auto ${thumbnailLoaded ? "block" : "hidden"}`} alt="Thumbnail" unoptimized onLoad={() => setThumbnailLoaded(true)} />
+		</>
+	);
+}
+
 export default function MapFinder() {
 	const { data: map, isLoading: loading, isError, error, refetch: findRandomMap } = useGetRandomMap(false);
 	const [foundMaps, setFoundMaps] = useState<MapSearchResult[]>([]);
-	const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
-
-	useEffect(() => {
-		setThumbnailLoaded(false);
-	}, [map?.MapId]);
 
 	async function findMap() {
 		if (map) {
@@ -57,11 +63,10 @@ export default function MapFinder() {
 					<hr className="mt-4"/>
 
 					<div className="flex flex-row gap-12 mt-4">
-						<div className="lg:w-1/2">
+						<div key={map.MapId} className="lg:w-1/2">
 							<Link href={`https://trackmania.exchange/mapshow/${map.MapId}`}>{translateTextStyling(map.Name)} - {map.OnlineMapId}</Link>
 							<p>By {map.Uploader.Name}</p>
-							{!thumbnailLoaded && <SkeletonCard />}
-							<Image src={`https://trackmania.exchange/mapthumb/${map.MapId}`} width="0" height="0" sizes="100vw" className={`w-full h-auto ${thumbnailLoaded ? "block" : "hidden"}`} alt="Thumbnail" unoptimized onLoad={() => setThumbnailLoaded(true)} />
+							<MapThumbnail map={map} />
 						</div>
 
 						<div className="lg:w-1/2">
