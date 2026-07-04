@@ -73,7 +73,7 @@ export default function RootLayout({
               </Link>
 
               <Link target="_blank" href="https://github.com/GarridoY" className="px-12">
-                <Image src="/GitHub.png" alt="GitHub" width={100} height={40} priority/> 
+                <Image src="/GitHub.png" alt="GitHub" width={100} height={40} priority style={{ width: "auto", height: "auto" }}/> 
               </Link>
             </div>
           </footer>
