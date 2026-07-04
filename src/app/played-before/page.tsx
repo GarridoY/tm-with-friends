@@ -13,7 +13,7 @@ import { Label } from "@radix-ui/react-label";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
-import { SyntheticEvent, useEffect, useState } from "react";
+import { SyntheticEvent, useState } from "react";
 
 function getKeyByValue(map: Map<string, string>, value: string): string | undefined {
     for (let [key, val] of map.entries()) {
@@ -27,16 +27,12 @@ function getKeyByValue(map: Map<string, string>, value: string): string | undefi
 export default function PlayedBefore() {
     const router = useRouter();
 
-    const [players, setPlayers] = useState<string[]>([""]);
+    const [players, setPlayers] = useState<string[]>(() => {
+        const groupObj = getGroup();
+        return groupObj ? groupObj.members : [""];
+    });
     const [mapId, setMapId] = useState<string>("");
     const [shouldSearch, setShouldSearch] = useState(false);
-
-    useEffect(() => {
-        const groupObj = getGroup();
-        if (groupObj) {
-            setPlayers(groupObj.members);
-        }
-    }, []);
 
     const { data: accountIds, isFetching: loadingAccountIds, isError: isAccountError, error: accountError } = useGetAccountIdsFromDisplayNames(players, shouldSearch);
     const { data: mapRecords, isFetching: loadingRecords, isError: isRecordsError, error: recordsError } = useGetMapRecords(
