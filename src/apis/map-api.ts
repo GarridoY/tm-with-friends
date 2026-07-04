@@ -1,34 +1,18 @@
 "use server"
 
 import nadeoServerClient from "@/apis/clients/nadeo-server-client";
-import { TrackmaniaMap } from "../types/trackmania-map";
+import { TrackmaniaMapSchema } from "@/schemas/trackmania-map";
+import { MapSearchResponseSchema, MapSearchResult } from "@/schemas/mania-exchange";
 import maniaExhangeClient from "./clients/mania-exchange-client";
 
-export async function fetchMap(mapId: string): Promise<TrackmaniaMap | null> {
+export type { MapSearchResult } from "@/schemas/mania-exchange";
+
+export async function fetchMap(mapId: string) {
     const response = await nadeoServerClient.get(`/maps/${mapId}`);
 
     if (response.status !== 200) { throw new Error(`Failed to fetch map (${response.status})`); }
     
-    const json = response.data as TrackmaniaMap;
-    if (!json.mapId) { return null; }
-
-    return json;
-}
-
-interface MapSearchResponse {
-	More: boolean;
-	Results: MapSearchResult[];
-}
-
-export interface MapSearchResult {
-	OnlineMapId: string;
-	MapId: number;
-	Uploader: MapUploader;
-	Name: string;
-}
-
-interface MapUploader {
-	Name: string;
+    return TrackmaniaMapSchema.parse(response.data);
 }
 
 export async function findRandomMap(): Promise<MapSearchResult> {
@@ -38,6 +22,7 @@ export async function findRandomMap(): Promise<MapSearchResult> {
 		"tag": "4",
 		"random": "1"
 	});
-	const response = await maniaExhangeClient.get<MapSearchResponse>(`/maps?${params}`);
-	return response.data.Results[0];
+	const response = await maniaExhangeClient.get(`/maps?${params}`);
+	const body = MapSearchResponseSchema.parse(response.data);
+	return body.Results[0];
 }

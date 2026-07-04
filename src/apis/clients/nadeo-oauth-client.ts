@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getPayloadFromAccessToken, decodeJWT } from '@/util/jwtUtil';
 import { env } from '@/env';
+import { OAuthResponseSchema } from '@/schemas/auth';
 
 let accessToken = null as string | null;
 
@@ -8,7 +9,7 @@ const nadeoOAuthClient = axios.create({
 	baseURL: "https://api.trackmania.com",
 	headers: {
     	"User-Agent": "Trackmania with Friends / duedreng3n / https://github.com/GarridoY/tm-with-friends"
-  	}
+   	}
 });
 
 // Add a request interceptor
@@ -16,9 +17,6 @@ nadeoOAuthClient.interceptors.request.use(
 	async function (config) {
 		if (!accessToken) {
 			const authResponse = await fetchNadeoOAuthAccessToken();
-            if (!authResponse) {
-                return config;
-            }
 			accessToken = authResponse.access_token;
 			config.headers.Authorization = "Bearer " + accessToken;
 			return config;
@@ -33,9 +31,6 @@ nadeoOAuthClient.interceptors.request.use(
 		if (expired) {
 			// Access token is Base64 encoded on retrieval
 			const authResponse = await fetchNadeoOAuthAccessToken();
-            if (!authResponse) {
-                return config;
-            }
 			accessToken = authResponse.access_token;
 		}
 
@@ -49,15 +44,9 @@ nadeoOAuthClient.interceptors.request.use(
 	}
 );
 
-interface OAuthResponse {
-    token_type: string,
-    expires_in: number,
-    access_token: string
-}
-
 // Uses fetch instead of axois as the function is used to get the access token for the nadeo server client, which uses axios. 
 // Using fetch here prevents circular dependencies between the two clients.
-async function fetchNadeoOAuthAccessToken(): Promise<OAuthResponse> {
+async function fetchNadeoOAuthAccessToken() {
     const CLIENT_ID = env.CLIENT_ID;
     const CLIENT_SECRET = env.CLIENT_SECRET;
 
@@ -67,14 +56,15 @@ async function fetchNadeoOAuthAccessToken(): Promise<OAuthResponse> {
         'grant_type': 'client_credentials'
     });
 
-    const data = await fetch("https://api.trackmania.com/api/access_token", {
+    const response = await fetch("https://api.trackmania.com/api/access_token", {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
         },
         body: requestBody
     });
-    return data.json();
+    const data = await response.json();
+    return OAuthResponseSchema.parse(data);
 }
 
 export default nadeoOAuthClient;

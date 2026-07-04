@@ -5,7 +5,7 @@ import SkeletonCard from "@/components/skeleton-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TrackmaniaMap } from "@/types/trackmania-map";
+import { TrackmaniaMap } from "@/schemas/trackmania-map";
 import { useState, SyntheticEvent } from "react";
 import Image from "next/image";
 import { AlertCircle } from "lucide-react";

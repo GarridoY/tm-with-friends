@@ -1,19 +1,15 @@
 "use server"
 
+import { z } from "zod";
 import nadeoServerClient from "@/apis/clients/nadeo-server-client";
-import { TrackmaniaRecord } from "../types/trackmania-records";
+import { TrackmaniaRecordSchema } from "@/schemas/trackmania-records";
 
-export async function fetchMapRecords(accounts: string[], mapId: string): Promise<TrackmaniaRecord[] | null> {
+export async function fetchMapRecords(accounts: string[], mapId: string) {
     let accountIdList = accounts.join(",");
     
     const response = await nadeoServerClient.get(`/v2/mapRecords/?accountIdList=${accountIdList}&mapId=${mapId}`);
 
     if (response.status !== 200) { throw new Error(`Failed to fetch map records (${response.status})`); }
     
-    const json = response.data as TrackmaniaRecord[] & ErrorResponse;
-    if (!Array.isArray(json)) {
-        return null;
-    }
-
-    return json;
+    return z.array(TrackmaniaRecordSchema).parse(response.data);
 }

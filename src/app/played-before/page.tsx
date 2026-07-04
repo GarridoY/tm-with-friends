@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
-import { TrackmaniaRecordExtended } from "@/types/trackmania-records";
+import { TrackmaniaRecordExtended } from "@/schemas/trackmania-records";
 import { getGroup } from "@/util/localStorageUtil";
 import { useGetAccountIdsFromDisplayNames } from "@/hooks/useAccounts";
 import { useGetMapRecords } from "@/hooks/useMapRecords";
