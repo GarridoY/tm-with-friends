@@ -5,6 +5,7 @@ import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 import Link from "next/link";
 import Image from "next/image";
 import Providers from "./providers";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -62,6 +63,8 @@ export default function RootLayout({
               </Providers>
             </div>
           </main>
+
+          <Toaster />
         
           <footer className="flex justify-center p-4 border-t bg-t-slate-400">
             <div className="flex flex-row items min-w-full lg:min-w-[1460px] items-center justify-center">

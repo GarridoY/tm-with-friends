@@ -5,11 +5,9 @@ import { TrackmaniaMap } from "../types/trackmania-map";
 import maniaExhangeClient from "./clients/mania-exchange-client";
 
 export async function fetchMap(mapId: string): Promise<TrackmaniaMap | null> {
-    const response = await nadeoServerClient.get(`/maps/${mapId}`).catch(err => {
-        console.error(err);
-        return null;
-    });
-    if (!response || response.status !== 200) { return null; }
+    const response = await nadeoServerClient.get(`/maps/${mapId}`);
+
+    if (response.status !== 200) { throw new Error(`Failed to fetch map (${response.status})`); }
     
     const json = response.data as TrackmaniaMap;
     if (!json.mapId) { return null; }

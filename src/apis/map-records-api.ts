@@ -6,11 +6,9 @@ import { TrackmaniaRecord } from "../types/trackmania-records";
 export async function fetchMapRecords(accounts: string[], mapId: string): Promise<TrackmaniaRecord[] | null> {
     let accountIdList = accounts.join(",");
     
-    const response = await nadeoServerClient.get(`/v2/mapRecords/?accountIdList=${accountIdList}&mapId=${mapId}`).catch(err => {
-        console.error(err);
-        return null;
-    });
-    if (!response || response.status !== 200) { return null; }
+    const response = await nadeoServerClient.get(`/v2/mapRecords/?accountIdList=${accountIdList}&mapId=${mapId}`);
+
+    if (response.status !== 200) { throw new Error(`Failed to fetch map records (${response.status})`); }
     
     const json = response.data as TrackmaniaRecord[] & ErrorResponse;
     if (!Array.isArray(json)) {

@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Image from "next/image";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import SkeletonCard from "@/components/skeleton-card";
 import Header from "@/components/header";
 import Link from "next/link";
@@ -11,7 +13,7 @@ import { translateTextStyling } from "@/util/trackmaniaMapUtil";
 import { useGetRandomMap } from "@/hooks/useMaps";
 
 export default function MapFinder() {
-	const { data: map, isLoading: loading, refetch: findRandomMap } = useGetRandomMap(false);
+	const { data: map, isLoading: loading, isError, error, refetch: findRandomMap } = useGetRandomMap(false);
 	const [foundMaps, setFoundMaps] = useState<MapSearchResult[]>([]);
 
 	async function findMap() {
@@ -19,7 +21,11 @@ export default function MapFinder() {
 			setFoundMaps(prev => [...prev, map]);
 		}
 
-		await findRandomMap();
+		try {
+			await findRandomMap();
+		} catch {
+			// Error is handled by React Query's isError state and the global toast
+		}
 	}
 
 	return (
@@ -32,6 +38,14 @@ export default function MapFinder() {
 			<div className="flex flex-col">
 
 				<Button type="button" className="w-fit mt-2" onClick={() => findMap()} disabled={loading}>Find a random RPG map{loading ? "..." : ""}</Button>
+
+				{isError && (
+				<Alert variant="destructive" className="mt-4">
+					<AlertCircle className="h-4 w-4" />
+					<AlertTitle>Failed to find a map</AlertTitle>
+					<AlertDescription>{error?.message}</AlertDescription>
+				</Alert>
+				)}
 
 				{map && (
 				<>

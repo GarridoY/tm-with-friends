@@ -1,6 +1,9 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, QueryCache } from '@tanstack/react-query'
+import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorFallback } from '@/components/error-fallback'
+import { toast } from 'sonner'
 import React, { useState } from 'react';
 
 export default function Providers({
@@ -8,9 +11,25 @@ export default function Providers({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [queryClient] = useState(() => new QueryClient())
+  const [queryClient] = useState(() => new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => {
+        toast.error("Something went wrong", {
+          description: error.message,
+        });
+      },
+    }),
+    defaultOptions: {
+      queries: {
+        retry: 1,
+        staleTime: 0,
+      },
+    },
+  }))
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </ErrorBoundary>
   )
 }

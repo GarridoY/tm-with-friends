@@ -10,6 +10,8 @@ import { getGroup } from "@/util/localStorageUtil";
 import { useGetAccountIdsFromDisplayNames } from "@/hooks/useAccounts";
 import { useGetMapRecords } from "@/hooks/useMapRecords";
 import { Label } from "@radix-ui/react-label";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
 import { SyntheticEvent, useEffect, useState } from "react";
 
@@ -36,8 +38,8 @@ export default function PlayedBefore() {
         }
     }, []);
 
-    const { data: accountIds, isFetching: loadingAccountIds } = useGetAccountIdsFromDisplayNames(players, shouldSearch);
-    const { data: mapRecords, isFetching: loadingRecords } = useGetMapRecords(
+    const { data: accountIds, isFetching: loadingAccountIds, isError: isAccountError, error: accountError } = useGetAccountIdsFromDisplayNames(players, shouldSearch);
+    const { data: mapRecords, isFetching: loadingRecords, isError: isRecordsError, error: recordsError } = useGetMapRecords(
         Array.from(accountIds?.values() || []),
         mapId,
         shouldSearch && !!accountIds,
@@ -103,6 +105,19 @@ export default function PlayedBefore() {
                     </div>
                 </div>
 
+                {isAccountError ?
+                <Alert variant="destructive" className="mt-8">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Failed to fetch players</AlertTitle>
+                    <AlertDescription>{accountError?.message}</AlertDescription>
+                </Alert>
+                : isRecordsError ?
+                <Alert variant="destructive" className="mt-8">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Failed to load records</AlertTitle>
+                    <AlertDescription>{recordsError?.message}</AlertDescription>
+                </Alert>
+                :
                 <Table className="table-auto mt-8 lg:mt-0 lg:text-sm text-xs">
                     <TableHeader>
                         <TableRow>
@@ -141,6 +156,7 @@ export default function PlayedBefore() {
                     </>}
                     </TableBody>
                 </Table>
+                }
             </div>
         </>
     )

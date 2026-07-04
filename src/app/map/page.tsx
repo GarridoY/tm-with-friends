@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { TrackmaniaMap } from "@/types/trackmania-map";
 import { useState, SyntheticEvent } from "react";
 import Image from "next/image";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { translateTextStyling } from "@/util/trackmaniaMapUtil";
 import { useGetMap } from "@/hooks/useMaps";
 import { useGetDisplayNameFromAccountId } from "@/hooks/useAccounts";
@@ -19,8 +21,8 @@ interface TrackmaniaMapExtended extends TrackmaniaMap {
 export default function MapLookupPage() {
     const [mapId, setMapId] = useState<string>("");
     const [shouldSearch, setShouldSearch] = useState(false);
-    const { data: map, isLoading: isMapLoading } = useGetMap(mapId, shouldSearch);
-    const { data: displayName, isLoading: isDisplayNameLoading } = useGetDisplayNameFromAccountId(map ? map.author : "", !!map);
+    const { data: map, isLoading: isMapLoading, isError: isMapError, error: mapError } = useGetMap(mapId, shouldSearch);
+    const { data: displayName, isLoading: isDisplayNameLoading, isError: isNameError } = useGetDisplayNameFromAccountId(map ? map.author : "", !!map);
 
     const mapWithAuthorName = map && displayName ? {...map, authorName: displayName} as TrackmaniaMapExtended : null;
 
@@ -60,7 +62,19 @@ export default function MapLookupPage() {
                 </div>
 
                 <div className="mt-8 lg:w-[500px]">
-                    {mapWithAuthorName ? 
+                    {isMapError ? 
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Failed to load map</AlertTitle>
+                        <AlertDescription>{mapError?.message}</AlertDescription>
+                    </Alert>
+                    : isNameError ?
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Failed to load author</AlertTitle>
+                        <AlertDescription>Could not fetch the display name for the map author</AlertDescription>
+                    </Alert>
+                    : mapWithAuthorName ? 
                     <>
                         <p>{translateTextStyling(mapWithAuthorName.name)}</p>
                         <p>By {mapWithAuthorName.authorName}</p>
