@@ -1,5 +1,6 @@
 import { getPayloadFromAccessToken, decodeJWT } from '@/util/jwtUtil';
 import axios from 'axios';
+import { env } from '@/env';
 
 let accessToken = null as string | null;
 
@@ -60,7 +61,7 @@ async function fetchNadeoServerTokens(): Promise<NadeoServiceResponse> {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Basic ${process.env.ENCODED_CREDENTIALS}`
+            "Authorization": `Basic ${env.ENCODED_CREDENTIALS}`
         },
         body: JSON.stringify({ audience: "NadeoServices" })
     });

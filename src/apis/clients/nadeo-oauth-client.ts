@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getPayloadFromAccessToken, decodeJWT } from '@/util/jwtUtil';
+import { env } from '@/env';
 
 let accessToken = null as string | null;
 
@@ -57,8 +58,8 @@ interface OAuthResponse {
 // Uses fetch instead of axois as the function is used to get the access token for the nadeo server client, which uses axios. 
 // Using fetch here prevents circular dependencies between the two clients.
 async function fetchNadeoOAuthAccessToken(): Promise<OAuthResponse> {
-    const CLIENT_ID = process.env.CLIENT_ID as string;
-    const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
+    const CLIENT_ID = env.CLIENT_ID;
+    const CLIENT_SECRET = env.CLIENT_SECRET;
 
     const requestBody = new URLSearchParams({
         'client_id': CLIENT_ID,

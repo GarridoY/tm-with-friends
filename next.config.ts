@@ -1,5 +1,8 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import "./src/env";
+
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
     output: "standalone",
     images: {
         remotePatterns: [
