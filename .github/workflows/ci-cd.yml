@@ -28,6 +28,21 @@ jobs:
               - '!iac/**'
           predicate-quantifier: some
 
+  lint:
+    name: Lint
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.other == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+
   opentofu-validate:
     name: Validate IaC
     needs: changes
@@ -63,7 +78,7 @@ jobs:
 
   docker:
     name: Build and push Docker image
-    needs: changes
+    needs: [changes, lint]
     if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.other == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
