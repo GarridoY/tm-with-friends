@@ -5,13 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getGroup, saveGroup } from "@/util/localStorageUtil";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 type Group = { name: string; members: string[] };
 const DEFAULT_GROUP: Group = { name: "My Group", members: [""] };
 
-export default function GroupManagement() {
-	const [group, setGroup] = useState<Group>(DEFAULT_GROUP);
+const subscribe = () => () => {};
+
+export default function GroupManagementPage() {
+	// false during SSR and hydration, true afterward on the client
+	const isClient = useSyncExternalStore(subscribe, () => true, () => false);
+
+	if (!isClient) return null;
+
+	return <GroupManagement initialGroup={getGroup() ?? DEFAULT_GROUP} />;
+}
+
+function GroupManagement({ initialGroup }: { initialGroup: Group }) {
+	const [group, setGroup] = useState<Group>(initialGroup);
 
 	useEffect(() => {
 		const saved = getGroup();
