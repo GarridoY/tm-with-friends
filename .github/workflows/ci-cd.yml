@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     outputs:
       iac: ${{ steps.filter.outputs.iac }}
@@ -32,7 +32,7 @@ jobs:
     name: Lint
     needs: changes
     if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.other == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
@@ -47,7 +47,7 @@ jobs:
     name: Validate IaC
     needs: changes
     if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.iac == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -80,7 +80,7 @@ jobs:
     name: Build and push Docker image
     needs: [changes, lint]
     if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.other == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     steps:
       - name: Checkout
@@ -120,7 +120,7 @@ jobs:
     name: Deploy to production
     needs: docker
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     environment: production
     permissions:
