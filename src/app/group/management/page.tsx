@@ -5,11 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getGroup, saveGroup } from "@/util/localStorageUtil";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+type Group = { name: string; members: string[] };
+const DEFAULT_GROUP: Group = { name: "My Group", members: [""] };
 
 export default function GroupManagement() {
-	const [group, setGroup] = useState<{ name: string, members: string[] }>(getGroup() || { name: "My Group", members: [""] });
+	const [group, setGroup] = useState<Group>(DEFAULT_GROUP);
+
+	useEffect(() => {
+		const saved = getGroup();
+		if (saved) setGroup(saved);
+	}, []);
 	
 	function addPlayer() {
 		setGroup({...group, members: [...group.members, ""]});
