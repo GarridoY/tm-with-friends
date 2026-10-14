@@ -13,7 +13,7 @@ import { Label } from "@radix-ui/react-label";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useRouter } from "next/navigation";
-import { SyntheticEvent, useEffect, useState } from "react";
+import { SyntheticEvent, useEffect, useState, useSyncExternalStore } from "react";
 
 function getKeyByValue(map: Map<string, string>, value: string): string | undefined {
     for (let [key, val] of map.entries()) {
@@ -24,17 +24,23 @@ function getKeyByValue(map: Map<string, string>, value: string): string | undefi
     return undefined;
 }
 
-export default function PlayedBefore() {
+const subscribe = () => () => {};
+
+export default function PlayedBeforePage() {
+    // false during SSR and hydration, true afterward on the client
+    const isClient = useSyncExternalStore(subscribe, () => true, () => false);
+
+    if (!isClient) return null;
+
+    return <PlayedBefore initialPlayers={getGroup()?.members ?? []} />;
+}
+
+function PlayedBefore({ initialPlayers }: { initialPlayers: string[] }) {
     const router = useRouter();
 
-    const [players, setPlayers] = useState<string[]>([]);
+    const [players, setPlayers] = useState<string[]>(initialPlayers);
     const [mapId, setMapId] = useState<string>("");
     const [shouldSearch, setShouldSearch] = useState(false);
-
-    useEffect(() => {
-        const groupObj = getGroup();
-        if (groupObj) setPlayers(groupObj.members);
-    }, []);
 
     const { data: accountIds, isFetching: loadingAccountIds, isError: isAccountError, error: accountError } = useGetAccountIdsFromDisplayNames(players, shouldSearch);
     const { data: mapRecords, isFetching: loadingRecords, isError: isRecordsError, error: recordsError } = useGetMapRecords(
